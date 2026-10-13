@@ -5,6 +5,7 @@ import java.time.Clock
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
+import com.timelog.app.reminders.validSchedule
 
 class TimeLogStore(internal val database: TimeLogDatabase, private val clock: Clock = Clock.systemUTC()) {
     private val dao = database.dao()
@@ -21,6 +22,7 @@ class TimeLogStore(internal val database: TimeLogDatabase, private val clock: Cl
             starterCategories.forEach { dao.insertCategory(it) }
             dao.saveSettings(AppSettings())
         }
+        if (dao.deviceState() == null) dao.saveDeviceState(DeviceReminderState())
     }
 
     suspend fun createCategory(name: String): Category = database.withTransaction {
@@ -46,10 +48,25 @@ class TimeLogStore(internal val database: TimeLogDatabase, private val clock: Cl
     }
 
     suspend fun saveSettings(settings: AppSettings) = database.withTransaction {
-        if (settings.id != 1 || settings.trackingStartMinute !in 0..1439 ||
-            settings.trackingEndMinute !in 0..1439 || settings.trackingEndMinute <= settings.trackingStartMinute ||
-            settings.intervalMinutes !in listOf(60, 120)) invalid(ValidationIssue.INVALID_SETTINGS)
+        if (!validSchedule(settings)) invalid(ValidationIssue.INVALID_SETTINGS)
+        val previous = dao.settings()
+        if (previous == null || previous.trackingStartMinute != settings.trackingStartMinute ||
+            previous.trackingEndMinute != settings.trackingEndMinute || previous.intervalMinutes != settings.intervalMinutes ||
+            previous.remindersEnabled != settings.remindersEnabled) {
+            invalidateScheduleState()
+        }
         dao.saveSettings(settings)
+    }
+
+    suspend fun invalidateSchedule(zoneId: String) = database.withTransaction {
+        java.time.ZoneId.of(zoneId)
+        invalidateScheduleState(zoneId)
+    }
+
+    private suspend fun invalidateScheduleState(zoneId: String? = null) {
+        val previous = dao.deviceState() ?: DeviceReminderState()
+        dao.saveDeviceState(DeviceReminderState(generation = Math.addExact(previous.generation, 1),
+            zoneId = zoneId ?: previous.zoneId))
     }
 
     suspend fun save(input: EntryInput, editing: Boolean = false): TimeEntry = database.withTransaction {

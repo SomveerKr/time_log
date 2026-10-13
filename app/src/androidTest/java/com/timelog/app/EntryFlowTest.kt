@@ -4,6 +4,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.withTransaction
+import androidx.compose.ui.semantics.SemanticsActions
 import com.timelog.app.data.EntryInput
 import com.timelog.app.data.MINUTE_MILLIS
 import com.timelog.app.ui.TimeLogViewModel
@@ -29,6 +30,7 @@ class EntryFlowTest {
                 store.database.openHelper.writableDatabase.execSQL("DELETE FROM settings")
             }
             store.initialize()
+            store.saveSettings(com.timelog.app.data.AppSettings(onboardingComplete = true))
         }
         compose.runOnUiThread { vm.closeDraft(); vm.selectDate(localDate(vm.now, vm.zone)) }
         compose.waitUntil(15_000) { vm.ready && vm.categories.size == 8 && vm.entries.isEmpty() }
@@ -75,8 +77,11 @@ class EntryFlowTest {
         openHistorical()
         compose.onNodeWithText("+ New category").performScrollTo().performClick()
         compose.onNodeWithTag("newCategory").performScrollTo().performTextInput("Synthetic project")
-        compose.onNodeWithText("Create category").performScrollTo().performClick()
-        compose.waitUntil(10_000) { vm.draft?.categoryId != null && !vm.busy }
+        // Keyboard animation can move this scrolling control between touch events.
+        compose.onNodeWithText("Create category").performScrollTo().assertIsEnabled().performSemanticsAction(SemanticsActions.OnClick) { it() }
+        compose.waitUntil(10_000) { vm.draft == null || vm.error != null || (vm.draft?.categoryId != null && !vm.busy) }
+        assertNull(vm.error)
+        assertNotNull("Category creation must retain the open draft", vm.draft?.categoryId)
         val id = vm.draft!!.categoryId!!
         compose.onNodeWithTag("first-category-$id").assertIsSelected()
         save()

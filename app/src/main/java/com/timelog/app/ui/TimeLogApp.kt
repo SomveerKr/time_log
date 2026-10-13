@@ -1,13 +1,11 @@
 package com.timelog.app.ui
 
-import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +33,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -55,7 +52,9 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
     }
     var insightsSelected by rememberSaveable { mutableStateOf(false) }
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
+    val needsSetup = vm.ready && vm.settings?.onboardingComplete == false
     val title = when {
+        needsSetup -> R.string.app_name
         settingsOpen -> R.string.settings
         insightsSelected -> R.string.insights
         else -> R.string.today
@@ -83,7 +82,7 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
                     }
                 },
                 actions = {
-                    if (!settingsOpen) {
+                    if (!settingsOpen && !needsSetup) {
                         IconButton(onClick = { settingsOpen = true }) {
                             AppIcon(R.drawable.ic_settings, stringResource(R.string.settings))
                         }
@@ -95,7 +94,7 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
             )
         },
         bottomBar = {
-            if (!settingsOpen) {
+            if (!settingsOpen && !needsSetup) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.background,
                     tonalElevation = 0.dp,
@@ -122,6 +121,7 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
                 .padding(padding)
         ) {
             when {
+                needsSetup -> Column(Modifier.verticalScroll(rememberScrollState())) { SetupScreen(vm) }
                 settingsOpen -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { SettingsShell(vm) }
                 insightsSelected -> Column(Modifier.padding(20.dp)) { EmptyState(
                     R.drawable.ic_insights,
@@ -165,20 +165,7 @@ private fun EmptyState(@DrawableRes icon: Int, @StringRes title: Int, @StringRes
 @Composable
 private fun SettingsShell(vm: TimeLogViewModel) {
     var categoriesOpen by rememberSaveable { mutableStateOf(false) }
-    Text(
-        stringResource(R.string.reminders),
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.semantics { heading() },
-    )
-    Spacer(Modifier.height(12.dp))
-    SettingValue(R.string.reminder_status, stringResource(R.string.off))
-    val window = if (DateFormat.is24HourFormat(LocalContext.current)) {
-        R.string.default_window_24
-    } else {
-        R.string.default_window_12
-    }
-    SettingValue(R.string.tracking_window, stringResource(window))
-    SettingValue(R.string.interval, stringResource(R.string.every_hour))
+    ReminderSettings(vm)
     Spacer(Modifier.height(24.dp))
     androidx.compose.material3.OutlinedButton(onClick = { categoriesOpen = true }, enabled = vm.ready,
         modifier = Modifier.fillMaxWidth()) { Text("Manage categories") }
@@ -193,23 +180,6 @@ private fun SettingsShell(vm: TimeLogViewModel) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     if (categoriesOpen) CategoryManager(vm) { categoriesOpen = false }
-}
-
-@Composable
-private fun SettingValue(@StringRes label: Int, value: String) {
-    Row(
-        Modifier.fillMaxWidth().padding(vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(stringResource(label), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Text(
-            value,
-            Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.End,
-        )
-    }
 }
 
 @Composable

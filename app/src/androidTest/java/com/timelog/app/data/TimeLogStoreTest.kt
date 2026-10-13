@@ -250,7 +250,7 @@ class TimeLogStoreTest {
         }
         assertEquals(AppSettings(), database.dao().settings())
         val saved = store.save(input())
-        database.openHelper.writableDatabase.version = 2
+        database.openHelper.writableDatabase.version = 3
         database.close()
         reopen()
         expectFailure<IllegalStateException> { database.dao().entries() }

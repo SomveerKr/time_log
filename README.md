@@ -1,6 +1,6 @@
 # Time Log Android app
 
-Prepared on 13 October 2026. This dedicated project contains the requirements, implementation instructions and Android app with local entry, editable history, categories and elapsed Today gaps. See `PROGRESS.md` for verified status and `BUILDING.md` for build commands.
+Prepared on 13 October 2026. This dedicated project contains the requirements, implementation instructions and Android app with local entry, editable history, categories, elapsed Today gaps and reminder schedule settings. See `PROGRESS.md` for verified status and `BUILDING.md` for build commands.
 
 ## Use these files in VS Code
 
@@ -49,4 +49,4 @@ Codex discovers project `AGENTS.md` instructions at session startup. Local plugi
 
 ## Scope of this delivery
 
-The initial handoff contained documentation only. T01-T03 add the single-module Android project, tested persistence and entry/history UI; checks are tracked in `PROGRESS.md`. Reminders, charts and backup follow in the ordered tasks. The old Google Form and Google Sheet are outside this app project; do not change or import them automatically.
+The initial handoff contained documentation only. T01-T04 add the single-module Android project, tested persistence, entry/history UI and reminder schedule rules/settings; checks are tracked in `PROGRESS.md`. Notification delivery, charts and backup follow in the ordered tasks. The old Google Form and Google Sheet are outside this app project; do not change or import them automatically.

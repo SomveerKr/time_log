@@ -4,6 +4,7 @@ import com.timelog.app.data.TimeEntry
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import com.timelog.app.reminders.resolveLocalMinute
 
 data class TimeRange(val start: Long, val end: Long) {
     val duration: Long get() = (end - start).coerceAtLeast(0)
@@ -31,8 +32,8 @@ fun unloggedRanges(range: TimeRange, entries: List<TimeEntry>): List<TimeRange> 
 }
 
 fun elapsedWindow(date: LocalDate, zone: ZoneId, startMinute: Int, endMinute: Int, now: Long): TimeRange {
-    val start = date.atStartOfDay().plusMinutes(startMinute.toLong()).atZone(zone).toInstant().toEpochMilli()
-    val end = date.atStartOfDay().plusMinutes(endMinute.toLong()).atZone(zone).toInstant().toEpochMilli()
+    val start = resolveLocalMinute(date, startMinute, zone).toEpochMilli()
+    val end = resolveLocalMinute(date, endMinute, zone).toEpochMilli()
     return TimeRange(start, minOf(end, now))
 }
 

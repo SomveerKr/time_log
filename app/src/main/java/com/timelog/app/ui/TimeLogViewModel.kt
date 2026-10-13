@@ -215,6 +215,7 @@ class TimeLogViewModel(
         store.renameCategory(id, name); onRenamed()
     }
     fun archiveCategory(id: String, archived: Boolean) = operation { store.setCategoryArchived(id, archived) }
+    fun saveReminderSettings(value: AppSettings) = operation { store.saveSettings(value) }
 
     private fun operation(block: suspend () -> Unit) {
         if (busy) return
@@ -235,6 +236,7 @@ class TimeLogViewModel(
                     ValidationIssue.CATEGORY_MISSING -> "Choose a category for each piece."
                     ValidationIssue.CATEGORY_ARCHIVED -> "This category is archived. Choose an active category."
                     ValidationIssue.INVALID_SPLIT -> "Use positive pieces that add up to the whole block."
+                    ValidationIssue.INVALID_SETTINGS -> "Choose a same-day end after start and a 60 or 120 minute interval."
                     ValidationIssue.OVERLAP -> e.conflictingEntry?.let {
                         "Overlaps ${categories.find { c -> c.id == it.categoryId }?.name.orEmpty()} " +
                             "(${rangeText(it.startMillis, it.endMillis, zone)}). Adjust the start or end."

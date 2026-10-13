@@ -1,7 +1,7 @@
 # Building Time Log
 
 This build contains local time entry, editable history, categories and elapsed
-Today gaps. Reminder delivery, charts and backups
+Today gaps, setup and reminder schedule settings. Reminder delivery, charts and backups
 are implemented in later tasks. `PROGRESS.md` records the current gate.
 
 ## Toolchain
@@ -19,7 +19,8 @@ Pinned app versions: AGP 9.4.0 with built-in Kotlin 2.2.10 and matching Compose
 compiler, Compose BOM 2026.09.00, and Activity Compose 1.13.0. The app compiles
 and targets Android 17 / API 37 and supports API
 26 or newer. Package ID: `com.timelog.app`. Room 2.8.5 with KSP 2.3.12 stores
-local data; exported schemas are under `app/schemas`. Lifecycle ViewModel and
+local data; exported schemas 1 and 2 are under `app/schemas`; explicit migration
+preserves existing history. Lifecycle ViewModel and
 SavedState use 2.9.4, matching the existing Activity dependency graph.
 
 Compatibility references: [Android Gradle Plugin 9.4](https://developer.android.com/build/releases/agp-9-4-0-release-notes),
@@ -49,7 +50,7 @@ adb shell am start -n com.timelog.app/.MainActivity
 
 Tests cover entry/category save, validation and retry, double taps, edit/split,
 delete confirmation, draft recreation, navigation, actual SQLite transactions,
-and gap/day calculations.
+gap/day calculations, timezone/DST reminder rules, setup and schema migration.
 Manually inspect Today, Insights, and Settings in both system themes. Record
 actual checks and any screenshots in progress; do not infer a visual pass from
 compilation or the UI test.

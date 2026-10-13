@@ -56,4 +56,10 @@ internal interface TimeLogDao {
 
     @Upsert
     suspend fun saveSettings(settings: AppSettings)
+
+    @Query("SELECT * FROM device_reminder_state WHERE id = 1")
+    suspend fun deviceState(): DeviceReminderState?
+
+    @Upsert
+    suspend fun saveDeviceState(state: DeviceReminderState)
 }

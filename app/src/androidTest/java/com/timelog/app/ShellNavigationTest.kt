@@ -18,6 +18,11 @@ class ShellNavigationTest {
     @Test
     fun navigationAndSettingsSurviveRecreation() {
         compose.waitUntil(timeoutMillis = 15_000) {
+            compose.onAllNodesWithText("Set up later").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty() ||
+                compose.onAllNodes(hasTestTag("logTime") and isEnabled()).fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
+        }
+        if (compose.onAllNodesWithText("Set up later").fetchSemanticsNodes().isNotEmpty()) compose.onNodeWithText("Set up later").performClick()
+        compose.waitUntil(timeoutMillis = 15_000) {
             compose.onAllNodes(hasTestTag("logTime") and isEnabled())
                 .fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
         }

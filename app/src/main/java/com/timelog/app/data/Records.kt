@@ -50,6 +50,17 @@ data class AppSettings(
     val remindersEnabled: Boolean = false,
 )
 
+@Entity(tableName = "device_reminder_state")
+data class DeviceReminderState(
+    @PrimaryKey val id: Int = 1,
+    val generation: Long = 0,
+    val zoneId: String = "",
+    val lastHandledEventKey: String? = null,
+    val snoozeAtMillis: Long? = null,
+    val snoozeBlockStartMillis: Long? = null,
+    val snoozeBlockEndMillis: Long? = null,
+)
+
 data class EntryInput(
     val categoryId: String,
     val startMillis: Long,

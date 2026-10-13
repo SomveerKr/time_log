@@ -97,7 +97,8 @@ fun TodayScreen(vm: TimeLogViewModel) {
             }
             Text(vm.date.dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, locale),
                 style = MaterialTheme.typography.titleLarge)
-            Text(stringResource(R.string.reminders_off), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+            Text(if (vm.settings?.remindersEnabled == true) "Reminders requested; delivery unavailable in this build" else stringResource(R.string.reminders_off),
+                color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
         }
         item {
             Button(onClick = { vm.openNew() }, enabled = vm.ready && !vm.busy,
