@@ -31,6 +31,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import com.timelog.app.R
+import com.timelog.app.reminders.nextBlock
+import java.time.Clock
 
 fun rangeText(start: Long, end: Long, zone: ZoneId, use24Hour: Boolean = true, locale: Locale = Locale.getDefault()): String {
     val first = Instant.ofEpochMilli(start).atZone(zone)
@@ -55,7 +57,7 @@ fun RefreshLocalTime(vm: TimeLogViewModel) {
     DisposableEffect(lifecycle, vm) {
         var registered = false
         val receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) { vm.refresh() }
+            override fun onReceive(context: Context, intent: Intent) { vm.refresh(reconcileReminders = intent.action != Intent.ACTION_TIME_TICK) }
         }
         fun start() {
             vm.refresh()
@@ -71,6 +73,7 @@ fun RefreshLocalTime(vm: TimeLogViewModel) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_START -> start()
+                Lifecycle.Event.ON_RESUME -> vm.refresh()
                 Lifecycle.Event.ON_STOP -> stop()
                 else -> Unit
             }
@@ -97,8 +100,13 @@ fun TodayScreen(vm: TimeLogViewModel) {
             }
             Text(vm.date.dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, locale),
                 style = MaterialTheme.typography.titleLarge)
-            Text(if (vm.settings?.remindersEnabled == true) "Reminders requested; delivery unavailable in this build" else stringResource(R.string.reminders_off),
+            Text(vm.reminderStatus,
                 color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+            vm.settings?.takeIf { it.remindersEnabled && vm.reminderOutput?.notificationsAllowed() == true && vm.reminderOutput.failure == null }?.let {
+                val next = nextBlock(it, Clock.fixed(Instant.ofEpochMilli(vm.now), vm.zone), vm.zone)
+                Text("Next scheduled check-in: ${formattedInstant(next.endMillis, vm.zone, includeDate = true)}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+            }
         }
         item {
             Button(onClick = { vm.openNew() }, enabled = vm.ready && !vm.busy,

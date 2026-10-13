@@ -41,7 +41,7 @@ class ReminderSettingsStoreTest {
         } finally { db.close(); context.deleteDatabase(name) }
     }
 
-    @Test fun migrationOneToTwoPreservesExistingCategoriesEntriesAndSettings() = runBlocking {
+    @Test fun migrationOneToCurrentPreservesExistingCategoriesEntriesAndSettings() = runBlocking {
         val name = "synthetic-migration-${UUID.randomUUID()}.db"
         val path = context.getDatabasePath(name)
         path.parentFile!!.mkdirs()
@@ -68,7 +68,7 @@ class ReminderSettingsStoreTest {
             assertEquals(AppSettings(onboardingComplete = true, trackingStartMinute = 510, trackingEndMinute = 1290,
                 intervalMinutes = 120, remindersEnabled = true), db.dao().settings())
             assertEquals(DeviceReminderState(), db.dao().deviceState())
-            assertEquals(2, db.openHelper.writableDatabase.version)
+            assertEquals(3, db.openHelper.writableDatabase.version)
         } finally { db.close(); context.deleteDatabase(name) }
     }
 }

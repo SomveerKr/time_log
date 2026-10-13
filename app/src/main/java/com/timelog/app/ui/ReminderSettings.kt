@@ -22,7 +22,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun SetupScreen(vm: TimeLogViewModel) {
+fun SetupScreen(vm: TimeLogViewModel, onEnable: (AppSettings) -> Unit) {
     var start by rememberSaveable { mutableIntStateOf(vm.settings!!.trackingStartMinute) }
     var end by rememberSaveable { mutableIntStateOf(vm.settings!!.trackingEndMinute) }
     var interval by rememberSaveable { mutableIntStateOf(vm.settings!!.intervalMinutes) }
@@ -33,39 +33,51 @@ fun SetupScreen(vm: TimeLogViewModel) {
         ScheduleControls(value, !vm.busy, { start = it }, { end = it }, { interval = it })
         SchedulePreview(value, vm)
         vm.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        Button(onClick = { vm.saveReminderSettings(value.copy(onboardingComplete = true, remindersEnabled = true)) },
+        Button(onClick = { onEnable(value.copy(onboardingComplete = true, remindersEnabled = true)) },
             enabled = !vm.busy && validSchedule(value), modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("enableReminders")) { Text("Enable reminders") }
         TextButton(onClick = { vm.saveReminderSettings(vm.settings!!.copy(onboardingComplete = true, remindersEnabled = false)) },
             enabled = !vm.busy) { Text("Set up later") }
-        Text("Reminder delivery is unavailable in this build.", style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
 @Composable
-fun ReminderSettings(vm: TimeLogViewModel) {
+fun ReminderSettings(vm: TimeLogViewModel, onEnable: (AppSettings) -> Unit, onTest: () -> Unit) {
     val value = vm.settings ?: return
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Reminders", style = MaterialTheme.typography.titleLarge)
         Row(Modifier.fillMaxWidth()) {
             Column(Modifier.weight(1f)) {
                 Text("Reminders")
-                Text(if (value.remindersEnabled) "Requested; delivery unavailable in this build" else "Off",
+                Text(vm.reminderStatus,
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Switch(checked = value.remindersEnabled, onCheckedChange = {
-                vm.saveReminderSettings(value.copy(remindersEnabled = it))
+                if (it) onEnable(value.copy(remindersEnabled = true)) else vm.saveReminderSettings(value.copy(remindersEnabled = false))
             }, enabled = !vm.busy, modifier = Modifier.testTag("reminderSwitch"))
         }
         ScheduleControls(value, !vm.busy, { vm.saveReminderSettings(value.copy(trackingStartMinute = it)) },
             { vm.saveReminderSettings(value.copy(trackingEndMinute = it)) },
             { vm.saveReminderSettings(value.copy(intervalMinutes = it)) })
         SchedulePreview(value, vm)
-        if (value.remindersEnabled) {
+        if (value.remindersEnabled && vm.reminderOutput?.notificationsAllowed() == true && vm.reminderOutput.failure == null) {
             val next = nextBlock(value, Clock.fixed(Instant.ofEpochMilli(vm.now), vm.zone), vm.zone)
             Text("Next scheduled check-in: ${formattedInstant(next.endMillis, vm.zone, includeDate = true)}", style = MaterialTheme.typography.bodyMedium)
         }
         vm.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        val context = LocalContext.current
+        if (vm.reminderOutput?.notificationsAllowed() == false && value.remindersEnabled) TextButton(onClick = {
+            context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName))
+        }) { Text("Open notification settings") }
+        if (android.os.Build.VERSION.SDK_INT >= 31 && vm.reminderOutput?.exactAllowed() == false) {
+            Text("Precise reminders are optional. Otherwise timing may vary.", style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TextButton(onClick = { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                .setData(android.net.Uri.parse("package:${context.packageName}"))) }) { Text("Allow precise reminders") }
+        }
+        OutlinedButton(onClick = onTest, enabled = !vm.busy, modifier = Modifier.fillMaxWidth().testTag("sendTestReminder")) { Text("Send test reminder") }
+        Text("Force-stop and phone battery restrictions can prevent reminders. Reopen Time Log after a force-stop or permission change.",
+            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -110,7 +122,7 @@ private fun SchedulePreview(value: AppSettings, vm: TimeLogViewModel) {
 }
 
 @Composable
-private fun formattedInstant(millis: Long, zone: ZoneId, includeDate: Boolean = false): String {
+fun formattedInstant(millis: Long, zone: ZoneId, includeDate: Boolean = false): String {
     val use24 = DateFormat.is24HourFormat(LocalContext.current)
     val time = if (use24) "HH:mm" else "h:mm a"
     return Instant.ofEpochMilli(millis).atZone(zone).format(DateTimeFormatter.ofPattern(

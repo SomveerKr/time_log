@@ -31,6 +31,8 @@ class ReminderSettingsUiTest {
     private val store get() = (compose.activity.application as TimeLogApplication).store
 
     @Before fun showSetupWithSyntheticSettings() {
+        if (android.os.Build.VERSION.SDK_INT >= 33) androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+            .uiAutomation.grantRuntimePermission("com.timelog.app", android.Manifest.permission.POST_NOTIFICATIONS)
         compose.runOnUiThread { vm = ViewModelProvider(compose.activity, TimeLogViewModel.Factory)[TimeLogViewModel::class.java] }
         compose.waitUntil(15_000) { vm.ready }
         runBlocking { store.saveSettings(AppSettings()) }

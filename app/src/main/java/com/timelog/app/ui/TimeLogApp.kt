@@ -40,11 +40,18 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.Manifest
+import android.os.Build
+import android.content.pm.PackageManager
+import androidx.compose.ui.platform.LocalContext
+import com.timelog.app.data.AppSettings
 import com.timelog.app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Factory)) {
+fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Factory), requestKey: String? = null, onRequestHandled: () -> Unit = {}) {
     RefreshLocalTime(vm)
     val snackbar = androidx.compose.runtime.remember { androidx.compose.material3.SnackbarHostState() }
     LaunchedEffect(vm.message) {
@@ -52,6 +59,26 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
     }
     var insightsSelected by rememberSaveable { mutableStateOf(false) }
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
+    var permissionPurpose by rememberSaveable { mutableStateOf<String?>(null) }
+    var sendTestAfterPermission by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        vm.refresh()
+        if (granted && sendTestAfterPermission) vm.sendTestReminder()
+        sendTestAfterPermission = false
+    }
+    val needsPermission = Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+    val onEnable: (AppSettings) -> Unit = { value ->
+        vm.saveReminderSettings(value) { if (needsPermission) permissionPurpose = "enable" }
+    }
+    val onTest: () -> Unit = {
+        if (needsPermission) permissionPurpose = "test"
+        else if (vm.reminderOutput?.notificationsAllowed() == true) vm.sendTestReminder()
+        else vm.showMessage("Notifications are blocked. Open notification settings to allow them.")
+    }
+    LaunchedEffect(requestKey, vm.ready) {
+        if (requestKey != null && vm.ready) { settingsOpen = false; insightsSelected = false; vm.openRequest(requestKey); onRequestHandled() }
+    }
     val needsSetup = vm.ready && vm.settings?.onboardingComplete == false
     val title = when {
         needsSetup -> R.string.app_name
@@ -121,8 +148,8 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
                 .padding(padding)
         ) {
             when {
-                needsSetup -> Column(Modifier.verticalScroll(rememberScrollState())) { SetupScreen(vm) }
-                settingsOpen -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { SettingsShell(vm) }
+                needsSetup -> Column(Modifier.verticalScroll(rememberScrollState())) { SetupScreen(vm, onEnable) }
+                settingsOpen -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { SettingsShell(vm, onEnable, onTest) }
                 insightsSelected -> Column(Modifier.padding(20.dp)) { EmptyState(
                     R.drawable.ic_insights,
                     R.string.insights_empty_title,
@@ -133,6 +160,13 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
         }
     }
     vm.draft?.let { EntrySheet(vm, it) }
+    if (permissionPurpose != null) androidx.compose.material3.AlertDialog(onDismissRequest = { permissionPurpose = null },
+        title = { Text("Allow time check-ins?") }, text = { Text("Time Log needs notifications for scheduled reminders. You can keep logging if you decline.") },
+        confirmButton = { androidx.compose.material3.TextButton(onClick = {
+            sendTestAfterPermission = permissionPurpose == "test"; permissionPurpose = null
+            if (Build.VERSION.SDK_INT >= 33) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }) { Text("Continue") } },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = { permissionPurpose = null }) { Text("Later") } })
 }
 
 @Composable
@@ -163,9 +197,9 @@ private fun EmptyState(@DrawableRes icon: Int, @StringRes title: Int, @StringRes
 }
 
 @Composable
-private fun SettingsShell(vm: TimeLogViewModel) {
+private fun SettingsShell(vm: TimeLogViewModel, onEnable: (AppSettings) -> Unit, onTest: () -> Unit) {
     var categoriesOpen by rememberSaveable { mutableStateOf(false) }
-    ReminderSettings(vm)
+    ReminderSettings(vm, onEnable, onTest)
     Spacer(Modifier.height(24.dp))
     androidx.compose.material3.OutlinedButton(onClick = { categoriesOpen = true }, enabled = vm.ready,
         modifier = Modifier.fillMaxWidth()) { Text("Manage categories") }

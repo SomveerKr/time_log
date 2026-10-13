@@ -6,7 +6,6 @@
     <string name="settings">Settings</string>
     <string name="back">Back</string>
     <string name="log_time">Log time</string>
-    <string name="reminders_off">Reminders off</string>
     <string name="logged_time">Logged time</string>
     <string name="today_empty_title">Your day starts here.</string>
     <string name="today_empty_body">Add your first time block.</string>

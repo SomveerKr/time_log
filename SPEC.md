@@ -155,6 +155,7 @@ Notification: "Time check-in" and "What did you do from 14:00 to 15:00?" Actions
 - Snooze retains the original block and does not move the regular schedule. Do not snooze beyond the selected end; explain that the block can be filled in the app. A regular reminder due before a snooze supersedes that snooze.
 - If a block is already fully logged, suppress or dismiss its notification. If partly logged, open its remaining gap(s); never overwrite the recorded part. Saving unrelated time must not dismiss the active block's reminder.
 - On delayed alarm delivery, present at most the most recent completed block for the current window. Discard obsolete notification intents safely. Do not notify after the window ends; keep those gaps in Today. This includes delayed final reminders.
+  The user confirmed a strict instant cutoff: even a final delivery milliseconds after the selected end is discarded. No final-minute grace period is allowed.
 - Closing the app's screen must not be required for notifications to work. Reminders work offline. No full-screen takeover, alarm-clock UI, permanent foreground service, or repeated nag loop.
 
 ### Android delivery implementation

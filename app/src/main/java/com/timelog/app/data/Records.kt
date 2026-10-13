@@ -59,6 +59,7 @@ data class DeviceReminderState(
     val snoozeAtMillis: Long? = null,
     val snoozeBlockStartMillis: Long? = null,
     val snoozeBlockEndMillis: Long? = null,
+    val activeEventKey: String? = null,
 )
 
 data class EntryInput(

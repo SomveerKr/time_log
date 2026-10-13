@@ -51,6 +51,15 @@ fun EntrySheet(vm: TimeLogViewModel, draft: EntryDraft) {
                 }
                 Text(durationText(draft.end - draft.start), style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.testTag("draftDuration"))
+                if (vm.reminderGaps.size > 1) {
+                    Text("Choose a remaining gap", style = MaterialTheme.typography.bodyMedium)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        vm.reminderGaps.forEach { gap ->
+                            FilterChip(selected = draft.start == gap.start && draft.end == gap.end, onClick = { vm.chooseReminderGap(gap) },
+                                enabled = !vm.busy, label = { Text(rangeText(gap.start, gap.end, vm.zone, android.text.format.DateFormat.is24HourFormat(LocalContext.current))) })
+                        }
+                    }
+                }
                 if (draft.chooseRange) Text("This interval is fully logged. Choose another time range.", color = MaterialTheme.colorScheme.error)
                 Text(if (draft.split) "First category" else "Category", style = MaterialTheme.typography.titleMedium)
                 CategoryChoices(vm, draft.categoryId, draft.originalCategoryId, second = false) {

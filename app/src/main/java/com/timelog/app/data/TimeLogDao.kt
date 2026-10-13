@@ -33,6 +33,9 @@ internal interface TimeLogDao {
     @Query("SELECT * FROM entries ORDER BY startMillis DESC")
     suspend fun entries(): List<TimeEntry>
 
+    @Query("SELECT * FROM entries WHERE endMillis > :start AND startMillis < :end ORDER BY startMillis")
+    suspend fun entriesInRange(start: Long, end: Long): List<TimeEntry>
+
     @Query("SELECT * FROM entries WHERE id = :id")
     suspend fun entry(id: String): TimeEntry?
 
@@ -62,4 +65,7 @@ internal interface TimeLogDao {
 
     @Upsert
     suspend fun saveDeviceState(state: DeviceReminderState)
+
+    @Query("SELECT COUNT(*) FROM entries")
+    fun observeEntryChanges(): Flow<Int>
 }

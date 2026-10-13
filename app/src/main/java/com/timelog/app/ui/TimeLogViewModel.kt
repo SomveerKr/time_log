@@ -24,6 +24,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.timelog.app.reminders.AndroidReminderOutput
+import com.timelog.app.reminders.ReminderController
+import com.timelog.app.reminders.TEST_REQUEST
+import com.timelog.app.reminders.parseEvent
 
 data class EntryDraft(
     val id: String = UUID.randomUUID().toString(),
@@ -63,6 +67,8 @@ class TimeLogViewModel(
     private val store: TimeLogStore,
     private val saved: SavedStateHandle,
     private val clock: Clock = Clock.systemUTC(),
+    private val reminders: ReminderController? = null,
+    val reminderOutput: AndroidReminderOutput? = null,
 ) : ViewModel() {
     var now by mutableLongStateOf(currentMinute()); private set
     var zone by mutableStateOf(ZoneId.systemDefault()); private set
@@ -76,6 +82,8 @@ class TimeLogViewModel(
     var busy by mutableStateOf(false); private set
     var message by mutableStateOf<String?>(null); private set
     var archivedMatch by mutableStateOf<Category?>(null); private set
+    var reminderStatus by mutableStateOf("Reminders off"); private set
+    var reminderGaps by mutableStateOf(emptyList<TimeRange>()); private set
     var draft by mutableStateOf(saved.get<Bundle>("draft")?.let(EntryDraft::from)); private set
     private val query = MutableStateFlow(queryRange())
     private var loadJob: Job? = null
@@ -97,7 +105,7 @@ class TimeLogViewModel(
                 store.initialize()
                 coroutineScope {
                     launch { store.categories.collect { categories = it } }
-                    launch { store.settings.collect { settings = it } }
+                    launch { store.settings.collect { settings = it; updateReminderStatus() } }
                     launch {
                         query.collectLatest { range ->
                             store.entriesBetween(range.start, range.end).collect {
@@ -112,11 +120,38 @@ class TimeLogViewModel(
         }
     }
 
-    fun refresh() {
+    fun refresh(reconcileReminders: Boolean = true) {
         val wasToday = today
         now = currentMinute()
         zone = ZoneId.systemDefault()
         if (wasToday) selectDate(localDate(now, zone)) else updateQuery()
+        updateReminderStatus()
+        if (reconcileReminders) viewModelScope.launch { reconcileDelivery() }
+    }
+
+    private fun updateReminderStatus() { reminderStatus = reminderOutput?.status(settings?.remindersEnabled == true) ?: "Reminders off" }
+    private suspend fun reconcileDelivery() {
+        try { reminders?.reconcile(); updateReminderStatus() }
+        catch (e: CancellationException) { throw e }
+        catch (_: Exception) { reminderOutput?.markFailure(); updateReminderStatus() }
+    }
+
+    fun openRequest(key: String) {
+        if (draft != null || busy) { message = "Your unsaved draft is still open. Save or close it first."; return }
+        selectDate(localDate(now, zone))
+        if (key == TEST_REQUEST) { openNew(); return }
+        val event = parseEvent(key) ?: return
+        operation {
+            val remaining = reminders?.remainingGaps(event).orEmpty()
+            if (remaining.isEmpty()) { message = "This check-in is no longer active. You can fill gaps in Today."; return@operation }
+            reminderGaps = remaining
+            val range = remaining.last()
+            persistDraft(EntryDraft(start = range.start, end = range.end))
+        }
+    }
+
+    fun chooseReminderGap(range: TimeRange) {
+        draft?.let { changeDraft(it.copy(start = range.start, end = range.end, chooseRange = false)) }
     }
 
     fun selectDate(value: LocalDate) {
@@ -136,7 +171,8 @@ class TimeLogViewModel(
 
     fun openNew(fillGap: Boolean = false) {
         if (!ready || busy) return
-        refresh()
+        reminderGaps = emptyList()
+        refresh(reconcileReminders = false)
         val interval = settings!!.intervalMinutes * MINUTE_MILLIS
         val range = if (today) TimeRange(now - interval, now) else {
             elapsedWindow(date, zone, settings!!.trackingStartMinute, settings!!.trackingEndMinute, now)
@@ -151,6 +187,7 @@ class TimeLogViewModel(
 
     fun edit(entry: TimeEntry) {
         if (busy) return
+        reminderGaps = emptyList()
         persistDraft(EntryDraft(id = entry.id, start = entry.startMillis, end = entry.endMillis,
             categoryId = entry.categoryId, note = entry.note.orEmpty(), editing = true,
             originalCategoryId = entry.categoryId))
@@ -164,8 +201,16 @@ class TimeLogViewModel(
     }
 
     private fun persistDraft(value: EntryDraft?) { draft = value; saved["draft"] = value?.bundle() }
-    fun closeDraft() { if (!busy) { persistDraft(null); error = null; archivedMatch = null } }
+    fun closeDraft() { if (!busy) { persistDraft(null); error = null; archivedMatch = null; reminderGaps = emptyList() } }
     fun consumeMessage() { message = null }
+    fun showMessage(value: String) { message = value }
+    fun sendTestReminder() {
+        viewModelScope.launch {
+            try { reminders?.prepareTest(); reminderOutput?.sendTest() }
+            catch (e: CancellationException) { throw e }
+            catch (_: Exception) { message = "Test reminder could not be sent. Please retry." }
+        }
+    }
 
     fun save() {
         val d = draft ?: return
@@ -215,7 +260,9 @@ class TimeLogViewModel(
         store.renameCategory(id, name); onRenamed()
     }
     fun archiveCategory(id: String, archived: Boolean) = operation { store.setCategoryArchived(id, archived) }
-    fun saveReminderSettings(value: AppSettings) = operation { store.saveSettings(value) }
+    fun saveReminderSettings(value: AppSettings, onSaved: () -> Unit = {}) = operation {
+        store.saveSettings(value); reconcileDelivery(); onSaved()
+    }
 
     private fun operation(block: suspend () -> Unit) {
         if (busy) return
@@ -250,7 +297,10 @@ class TimeLogViewModel(
 
     companion object {
         val Factory = viewModelFactory {
-            initializer { TimeLogViewModel((this[APPLICATION_KEY] as TimeLogApplication).store, createSavedStateHandle()) }
+            initializer {
+                val app = this[APPLICATION_KEY] as TimeLogApplication
+                TimeLogViewModel(app.store, createSavedStateHandle(), reminders = app.reminders, reminderOutput = app.reminderOutput)
+            }
         }
     }
 }
