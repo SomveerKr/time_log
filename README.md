@@ -1,6 +1,6 @@
 # Time Log Android app
 
-Prepared on 13 October 2026. This dedicated project contains the requirements, implementation instructions, Android visual shell, and validated local data layer. See `PROGRESS.md` for verified status and `BUILDING.md` for build commands. The entry UI is connected in T03.
+Prepared on 13 October 2026. This dedicated project contains the requirements, implementation instructions and Android app with local entry, editable history, categories and elapsed Today gaps. See `PROGRESS.md` for verified status and `BUILDING.md` for build commands.
 
 ## Use these files in VS Code
 
@@ -43,10 +43,10 @@ Ponytail was verified as installed and enabled at user scope on the originating 
 - Installed skill read successfully: `~/.codex/plugins/cache/ponytail/ponytail/5.1.0/skills/ponytail/SKILL.md`.
 - The skill is active in the originating Codex session.
 
-This is a user-level installation, not a copy inside this project. VS Code using a different user, remote machine, WSL environment, or Codex home must verify its own installation. The receiving VS Code extension has not been tested. Do not claim a measured token saving: the instruction is to use Ponytail to keep work focused and avoid unnecessary code and context.
+The receiving Windows Codex environment also lists Ponytail as an installed skill; its current instructions were read and applied at full level. This is a user-level installation, not a copy inside this project. A different environment must verify its own installation. Do not claim a measured token saving: Ponytail keeps work focused and avoids unnecessary code and context.
 
 Codex discovers project `AGENTS.md` instructions at session startup. Local plugin choices can be saved in the user configuration. See [Codex project instructions](https://learn.chatgpt.com/docs/agent-configuration/agents-md) and [plugin configuration](https://developers.openai.com/plugins/build/plugins).
 
 ## Scope of this delivery
 
-The initial handoff contained documentation only. The current T01 increment adds a single-module Android project and visual shell; its required checks are tracked in `PROGRESS.md`. The old Google Form and Google Sheet are outside this app project; do not change or import them automatically.
+The initial handoff contained documentation only. T01-T03 add the single-module Android project, tested persistence and entry/history UI; checks are tracked in `PROGRESS.md`. Reminders, charts and backup follow in the ordered tasks. The old Google Form and Google Sheet are outside this app project; do not change or import them automatically.

@@ -8,7 +8,6 @@
     <string name="log_time">Log time</string>
     <string name="reminders_off">Reminders off</string>
     <string name="logged_time">Logged time</string>
-    <string name="zero_duration">0 min</string>
     <string name="today_empty_title">Your day starts here.</string>
     <string name="today_empty_body">Add your first time block.</string>
     <string name="insights_empty_title">A little time, a clearer picture.</string>

@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -35,20 +36,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelog.app.R
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimeLogApp() {
+fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Factory)) {
+    RefreshLocalTime(vm)
+    val snackbar = androidx.compose.runtime.remember { androidx.compose.material3.SnackbarHostState() }
+    LaunchedEffect(vm.message) {
+        vm.message?.let { message -> vm.consumeMessage(); snackbar.showSnackbar(message) }
+    }
     var insightsSelected by rememberSaveable { mutableStateOf(false) }
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
     val title = when {
@@ -60,6 +64,7 @@ fun TimeLogApp() {
     BackHandler(!settingsOpen && insightsSelected) { insightsSelected = false }
 
     Scaffold(
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbar) },
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
@@ -111,45 +116,23 @@ fun TimeLogApp() {
             }
         },
     ) { padding ->
-        Column(
+        Box(
             Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 16.dp),
         ) {
             when {
-                settingsOpen -> SettingsShell()
-                insightsSelected -> EmptyState(
+                settingsOpen -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { SettingsShell(vm) }
+                insightsSelected -> Column(Modifier.padding(20.dp)) { EmptyState(
                     R.drawable.ic_insights,
                     R.string.insights_empty_title,
                     R.string.insights_empty_body,
-                )
-                else -> TodayShell()
+                ) }
+                else -> TodayScreen(vm)
             }
         }
     }
-}
-
-@Composable
-private fun TodayShell() {
-    Text(
-        LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM", LocalLocale.current.platformLocale)),
-        style = MaterialTheme.typography.bodyLarge,
-    )
-    Spacer(Modifier.height(8.dp))
-    SecondaryText(stringResource(R.string.reminders_off))
-    Spacer(Modifier.height(24.dp))
-    // Entry becomes available when the transactional save flow is connected in T03.
-    Button(onClick = {}, enabled = false, modifier = Modifier.fillMaxWidth().height(56.dp)) {
-        Text(stringResource(R.string.log_time))
-    }
-    Spacer(Modifier.height(28.dp))
-    SecondaryText(stringResource(R.string.logged_time))
-    Text(stringResource(R.string.zero_duration), style = MaterialTheme.typography.headlineMedium)
-    Spacer(Modifier.height(20.dp))
-    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-    EmptyState(R.drawable.ic_today, R.string.today_empty_title, R.string.today_empty_body)
+    vm.draft?.let { EntrySheet(vm, it) }
 }
 
 @Composable
@@ -180,7 +163,8 @@ private fun EmptyState(@DrawableRes icon: Int, @StringRes title: Int, @StringRes
 }
 
 @Composable
-private fun SettingsShell() {
+private fun SettingsShell(vm: TimeLogViewModel) {
+    var categoriesOpen by rememberSaveable { mutableStateOf(false) }
     Text(
         stringResource(R.string.reminders),
         style = MaterialTheme.typography.titleLarge,
@@ -196,6 +180,9 @@ private fun SettingsShell() {
     SettingValue(R.string.tracking_window, stringResource(window))
     SettingValue(R.string.interval, stringResource(R.string.every_hour))
     Spacer(Modifier.height(24.dp))
+    androidx.compose.material3.OutlinedButton(onClick = { categoriesOpen = true }, enabled = vm.ready,
+        modifier = Modifier.fillMaxWidth()) { Text("Manage categories") }
+    Spacer(Modifier.height(24.dp))
     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     Spacer(Modifier.height(28.dp))
     Text(stringResource(R.string.local_data_title), style = MaterialTheme.typography.titleLarge)
@@ -205,6 +192,7 @@ private fun SettingsShell() {
         style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+    if (categoriesOpen) CategoryManager(vm) { categoriesOpen = false }
 }
 
 @Composable
@@ -222,11 +210,6 @@ private fun SettingValue(@StringRes label: Int, value: String) {
             textAlign = TextAlign.End,
         )
     }
-}
-
-@Composable
-private fun SecondaryText(text: String) {
-    Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable

@@ -4,13 +4,13 @@ Last updated: 2026-10-13, Asia/Kolkata
 
 ## Current checkpoint
 
-- Project state: T01 committed; T02 complete and ready for task commit.
+- Project state: T01 and T02 committed and verified; T03 complete and ready for task commit.
 - Current task: none.
-- Next task: T03 Fast entry and history.
-- Exact next action: commit and verify T02, then start T03 by connecting Today/history and draft entry UI to the validated store.
+- Next task: T04 Reminder rules and settings.
+- Exact next action: commit and verify T03, then start T04 reminder rules/settings.
 - Current blocker: none; phone is connected and authorized.
-- Last verified implementation commit: `4d39ed112cf6491f695e32e1550899d6fb5e10aa`, `chore(T01): establish Android project and visual shell`; subject/files verified and post-commit working tree clean.
-- Uncommitted app changes: completed T02 data layer, schema, synthetic tests, documentation, and progress ready for commit.
+- Last verified implementation commit: `2f6aea2c4e5fb870fa2d3df889d84194f8dc14ff`, `feat(T02): persist time entries and custom categories`; subject/files verified and post-commit working tree clean.
+- Uncommitted app changes: completed T03 UI, saved-state ViewModel, app store wiring, gap calculation, tests and verification/docs.
 - Ponytail: available in this Codex skill catalog; installed instructions read from the discovered user skill path and applied at full level.
 
 ## Task ledger
@@ -19,7 +19,7 @@ Last updated: 2026-10-13, Asia/Kolkata
 | --- | --- | --- |
 | T01 Foundation and visual shell | done | Build/lint, two-version UI test, phone light/dark review, and scoped security audit passed. See `docs/verification/t01/README.md`. |
 | T02 Local records and categories | done | 13 Android-backed tests, build/lint, exported schema, and scoped security/data audit passed. See `docs/verification/t02.md`. |
-| T03 Fast entry and history | not_started | |
+| T03 Fast entry and history | done | 4 gap tests, 20 Android integration tests, fresh build/lint, offline/restart/rotation and visual/security checks passed. See docs/verification/t03.md. |
 | T04 Reminder rules and settings | not_started | |
 | T05 Android notification delivery | not_started | |
 | T06 Daily and weekly insights | not_started | |
@@ -32,15 +32,15 @@ Allowed statuses: `not_started`, `in_progress`, `blocked`, `done`. At most one t
 
 ## Active task details
 
-- Objective: T02 complete; commit and verify before T03.
-- Completed steps: verified T01 commit; selected stable Room 2.8.5 and KSP 2.3.12 from official sources; implemented three Room entities, indexed foreign-key records, normalized categories, settings, serialized save/edit/delete/split validation, schema export/migration registration, and 13 Android-backed tests. Device reminder state is reserved for T04 with an explicit schema migration.
-- Files touched: `PROGRESS.md`, root/app Gradle files, `app/src/main/java/com/timelog/app/data`, and `app/src/androidTest/java/com/timelog/app/data/TimeLogStoreTest.kt`.
-- Checks run and results: debug build/lint and 13 actual Room/SQLite tests passed on Android 17 emulator; 0 failures/errors/skips, 17.277 s. Build took 5 min. Lint 0 errors, 1 advisory newer-Gradle warning. Exported schema, unique index, restricted foreign key, parameterized SQL, transaction validation, and private-file/dependency audit passed.
-- Checks still required: T02 commit verification. UI/draft/process recreation checks belong to T03.
-- Known issues: default sandbox command setup fails; scoped elevated commands work. Use per-command safe.directory for the sandbox identity. PowerShell scripts are disabled, so supply toolchain environment only to each process; no policy changes. Log time is disabled until T03 connects persistence.
-- Latest check: all T02 gates passed; evidence saved in `docs/verification/t02.md`. `ANDROID_SERIAL` successfully limited tests to the dedicated emulator. `feat(T02): persist time entries and custom categories` pending commit verification.
-- Next concrete action: commit only T02 changes, verify SHA/files and working tree, then save the T03 start checkpoint before editing.
-
+- Objective: T03 complete; commit and verify before T04.
+- Completed: Today/date navigation and elapsed gaps, native entry controls, saved draft, inline categories/management, notes, edit/split/delete and retryable database errors.
+- Changed files: application/manifest, app Gradle, Today/entry UI and ViewModel, TimeRanges, entry/navigation/unit tests, README/BUILDING, verification docs/screenshots and progress.
+- Checks: 4 pure gap/day/DST tests passed; 20 Android-backed tests passed (6 entry UI, 1 navigation, 13 database), 0 failures/errors/skips. Fresh debug build/lint passed in 55 s; lint 0 errors, 3 advisory newer-version warnings.
+- Manual checks passed on API 37 emulator: keyboard Save visibility, rotation draft retention, offline entry, same saved data after force-stop/cold restart, light/dark visible UI. Six synthetic screenshots saved. Original emulator settings restored.
+- Security review: no new platform permissions/exported app components, private database and bounded saved draft, all mutations use validated Room transactions, no network/telemetry or destructive migration. No private tooling/data staged.
+- Remaining: T03 task commit verification. API 26 runtime, phone flow timing, 200% text/TalkBack/contrast and real reminders remain assigned to later tasks.
+- Blockers: none. Emulator-only instrumentation protects phone history.
+- Next concrete action: review staged diff, commit feat(T03): add quick time entry and editable history, verify SHA/files and clean tree; then save T04 start checkpoint.
 ## Decisions and environment
 
 - Product name: Time Log, a working name.
@@ -56,6 +56,8 @@ Allowed statuses: `not_started`, `in_progress`, `blocked`, `done`. At most one t
 
 - 2026-10-13: Specification and implementation instructions prepared. No app tests or implementation commits performed.
 - 2026-10-13: T01 committed as `4d39ed1`, `chore(T01): establish Android project and visual shell`. Build/lint/security audit, Android 14/17 UI tests, and six light/dark screenshots passed.
-- 2026-10-13: T02 gates passed; `feat(T02): persist time entries and custom categories` pending commit verification. 13 Android-backed database tests, build/lint, schema, and security/data audit passed.
+- 2026-10-13: T02 committed as `2f6aea2`, `feat(T02): persist time entries and custom categories`. 13 Android-backed database tests, build/lint, schema and security/data audit passed.
 
 Keep the active checkpoint concise. Add one short history line per completed task with its unique commit subject and test outcome. Resolve commit hashes from Git as described in `IMPLEMENTATION.md`; never invent a hash.
+
+- 2026-10-13: T03 gates passed; feat(T03): add quick time entry and editable history pending commit verification. 4 unit and 20 Android-backed tests, build/lint, offline/restart/rotation and visual/security checks passed.
