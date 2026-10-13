@@ -1,7 +1,7 @@
 # Building Time Log
 
-This is the T01 visual shell, not the finished time tracker. Entry is disabled
-until T03 connects validated local persistence. Reminder delivery and backups
+This build contains the visual shell and validated local data layer. Entry is disabled
+until T03 connects the UI. Reminder delivery and backups
 are implemented in later tasks. `PROGRESS.md` records the current gate.
 
 ## Toolchain
@@ -18,7 +18,8 @@ Git settings are needed. Keep build caches in this folder when using these tools
 Pinned app versions: AGP 9.4.0 with built-in Kotlin 2.2.10 and matching Compose
 compiler, Compose BOM 2026.09.00, and Activity Compose 1.13.0. The app compiles
 and targets Android 17 / API 37 and supports API
-26 or newer. Package ID: `com.timelog.app`. Room is introduced in T02.
+26 or newer. Package ID: `com.timelog.app`. Room 2.8.5 with KSP 2.3.12 stores
+local data; exported schemas are under `app/schemas`.
 
 Compatibility references: [Android Gradle Plugin 9.4](https://developer.android.com/build/releases/agp-9-4-0-release-notes),
 [Android 17 SDK setup](https://developer.android.com/about/versions/17/setup-sdk),

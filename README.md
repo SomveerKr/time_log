@@ -1,6 +1,6 @@
 # Time Log Android app
 
-Prepared on 13 October 2026. This dedicated project contains the requirements, implementation instructions, and the T01 Android visual shell. See `PROGRESS.md` for verified status and `BUILDING.md` for build commands. The app is not yet a working time tracker.
+Prepared on 13 October 2026. This dedicated project contains the requirements, implementation instructions, Android visual shell, and validated local data layer. See `PROGRESS.md` for verified status and `BUILDING.md` for build commands. The entry UI is connected in T03.
 
 ## Use these files in VS Code
 
