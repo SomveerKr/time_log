@@ -114,14 +114,14 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
                 },
                 navigationIcon = {
                     if (settingsOpen) {
-                        IconButton(onClick = { settingsOpen = false }) {
+                        IconButton(onClick = { settingsOpen = false }, modifier = Modifier.size(48.dp)) {
                             AppIcon(R.drawable.ic_back, stringResource(R.string.back))
                         }
                     }
                 },
                 actions = {
                     if (!settingsOpen && !needsSetup) {
-                        IconButton(onClick = { settingsOpen = true }) {
+                        IconButton(onClick = { settingsOpen = true }, modifier = Modifier.size(48.dp)) {
                             AppIcon(R.drawable.ic_settings, stringResource(R.string.settings))
                         }
                     }

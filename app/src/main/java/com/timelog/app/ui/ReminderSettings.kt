@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.timelog.app.data.AppSettings
 import com.timelog.app.reminders.dailyBlocks
@@ -53,7 +55,7 @@ fun ReminderSettings(vm: TimeLogViewModel, onEnable: (AppSettings) -> Unit, onTe
             }
             Switch(checked = value.remindersEnabled, onCheckedChange = {
                 if (it) onEnable(value.copy(remindersEnabled = true)) else vm.saveReminderSettings(value.copy(remindersEnabled = false))
-            }, enabled = !vm.busy, modifier = Modifier.testTag("reminderSwitch"))
+            }, enabled = !vm.busy, modifier = Modifier.semantics { contentDescription = "Reminders" }.testTag("reminderSwitch"))
         }
         ScheduleControls(value, !vm.busy, { vm.saveReminderSettings(value.copy(trackingStartMinute = it)) },
             { vm.saveReminderSettings(value.copy(trackingEndMinute = it)) },
@@ -89,6 +91,7 @@ private fun ScheduleControls(value: AppSettings, enabled: Boolean, onStart: (Int
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         listOf(60, 120).forEach { minutes ->
             FilterChip(selected = value.intervalMinutes == minutes, onClick = { onInterval(minutes) }, enabled = enabled,
+                border = FilterChipDefaults.filterChipBorder(enabled = enabled, selected = value.intervalMinutes == minutes, borderColor = MaterialTheme.colorScheme.outline),
                 label = { Text("$minutes minutes") }, modifier = Modifier.heightIn(min = 48.dp).testTag("interval$minutes"))
         }
     }
@@ -103,7 +106,7 @@ private fun MinuteControl(label: String, tag: String, minute: Int, enabled: Bool
         Text(label, Modifier.weight(1f).padding(top = 14.dp))
         TextButton(onClick = {
             TimePickerDialog(context, { _, hour, minutes -> onChanged(hour * 60 + minutes) }, minute / 60, minute % 60, use24).show()
-        }, enabled = enabled, modifier = Modifier.testTag(tag)) {
+        }, enabled = enabled, modifier = Modifier.semantics { contentDescription = label }.testTag(tag)) {
             Text(LocalTime.of(minute / 60, minute % 60).format(DateTimeFormatter.ofPattern(if (use24) "HH:mm" else "h:mm a", locale)))
         }
     }

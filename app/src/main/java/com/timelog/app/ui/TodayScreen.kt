@@ -15,6 +15,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.testTag
@@ -91,12 +94,16 @@ fun TodayScreen(vm: TimeLogViewModel) {
     val locale = LocalLocale.current.platformLocale
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                TextButton(onClick = { vm.selectDate(vm.date.minusDays(1)) }, modifier = Modifier.testTag("previousDay")) { Text("Previous") }
-                TextButton(onClick = { pickDate(context, vm.date, vm.now) { vm.selectDate(it) } }, modifier = Modifier.testTag("selectedDate")) {
-                    Text(vm.date.format(DateTimeFormatter.ofPattern("d MMM yyyy", locale)))
+            Row(Modifier.fillMaxWidth()) {
+                IconButton(onClick = { vm.selectDate(vm.date.minusDays(1)) }, modifier = Modifier.size(48.dp).testTag("previousDay")) {
+                    Icon(painterResource(R.drawable.ic_back), "Previous day")
                 }
-                TextButton(onClick = { vm.selectDate(vm.date.plusDays(1)) }, enabled = !vm.today, modifier = Modifier.testTag("nextDay")) { Text("Next") }
+                TextButton(onClick = { pickDate(context, vm.date, vm.now) { vm.selectDate(it) } }, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("selectedDate")) {
+                    Text(vm.date.format(DateTimeFormatter.ofPattern("d MMM yyyy", locale)), textAlign = TextAlign.Center)
+                }
+                IconButton(onClick = { vm.selectDate(vm.date.plusDays(1)) }, enabled = !vm.today, modifier = Modifier.size(48.dp).testTag("nextDay")) {
+                    Icon(painterResource(R.drawable.ic_back), "Next day", Modifier.rotate(180f))
+                }
             }
             Text(vm.date.dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, locale),
                 style = MaterialTheme.typography.titleLarge)

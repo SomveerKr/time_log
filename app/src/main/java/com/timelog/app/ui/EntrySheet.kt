@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -111,12 +112,12 @@ private fun TimeField(label: String, tag: String, millis: Long, zone: ZoneId, en
         Text(label, Modifier.weight(0.6f).padding(top = 14.dp))
         TextButton(onClick = { pickDate(context, value.toLocalDate()) {
             onChanged(it.atTime(value.toLocalTime()).atZone(zone).toInstant().toEpochMilli())
-        } }, enabled = enabled, modifier = Modifier.weight(1.3f).testTag("${tag}Date")) {
+        } }, enabled = enabled, modifier = Modifier.weight(1.3f).semantics { contentDescription = "$label date" }.testTag("${tag}Date")) {
             Text(value.format(DateTimeFormatter.ofPattern("d MMM yyyy", locale)))
         }
         TextButton(onClick = { TimePickerDialog(context, { _, hour, minute ->
             onChanged(value.toLocalDate().atTime(hour, minute).atZone(zone).toInstant().toEpochMilli())
-        }, value.hour, value.minute, use24).show() }, enabled = enabled, modifier = Modifier.weight(1f).testTag("${tag}Time")) {
+        }, value.hour, value.minute, use24).show() }, enabled = enabled, modifier = Modifier.weight(1f).semantics { contentDescription = "$label time" }.testTag("${tag}Time")) {
             Text(value.format(DateTimeFormatter.ofPattern(if (use24) "HH:mm" else "h:mm a", locale)))
         }
     }
@@ -131,6 +132,7 @@ private fun CategoryChoices(vm: TimeLogViewModel, selected: String?, retained: S
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         vm.categories.filter { !it.archived || it.id == retained }.forEach { category ->
             FilterChip(selected = selected == category.id, onClick = { onSelected(category.id) }, enabled = !vm.busy,
+                border = FilterChipDefaults.filterChipBorder(enabled = !vm.busy, selected = selected == category.id, borderColor = MaterialTheme.colorScheme.outline),
                 label = { Text(category.name + if (category.archived) " (archived)" else "") },
                 leadingIcon = { Box(Modifier.size(8.dp).background(Color(categoryColors[category.colorToken]), CircleShape)) },
                 modifier = Modifier.heightIn(min = 48.dp).testTag("${if (second) "second" else "first"}-category-${category.id}"))
@@ -159,8 +161,10 @@ fun CategoryManager(vm: TimeLogViewModel, onClose: () -> Unit) {
             vm.categories.forEach { category ->
                 Text(category.name + if (category.archived) " (archived)" else "", style = MaterialTheme.typography.titleMedium)
                 Row {
-                    TextButton(onClick = { renameId = category.id; name = category.name }, enabled = !vm.busy) { Text("Rename") }
-                    TextButton(onClick = { vm.archiveCategory(category.id, !category.archived) }, enabled = !vm.busy) {
+                    TextButton(onClick = { renameId = category.id; name = category.name }, enabled = !vm.busy,
+                        modifier = Modifier.semantics { contentDescription = "Rename ${category.name}" }) { Text("Rename") }
+                    TextButton(onClick = { vm.archiveCategory(category.id, !category.archived) }, enabled = !vm.busy,
+                        modifier = Modifier.semantics { contentDescription = "${if (category.archived) "Reactivate" else "Archive"} ${category.name}" }) {
                         Text(if (category.archived) "Reactivate" else "Archive")
                     }
                 }

@@ -1,16 +1,16 @@
 # Saved implementation progress
 
-Last updated: 2026-10-14, Asia/Kolkata
+Last updated: 2026-10-15, Asia/Kolkata
 
 ## Current checkpoint
 
-- Project state: T01-T07 committed and verified; T08 gate passed, commit pending verification.
-- Current task: none; commit T08 before starting T09.
-- Next task: T09 Design and accessibility review.
-- Exact next action: commit reviewed T08 files as `feat(T08): restore backups with validation and rollback`, verify the commit, then start T09 accessibility/design review.
-- Current blocker: none for T08. Phone is disconnected; physical testing remains T10.
-- Last verified implementation commit: `faf304213caf59e9ecbd32edc9799b7962fd0ee3`, `feat(T07): export versioned local backups`; subject/files verified and post-commit working tree clean.
-- Uncommitted app changes: BackupRestore parser/validation/replacement, DAO delete operations, reminder-locked restore, application/ViewModel/picker/confirmation integration, eight data-safety tests and one restore UI test, backup format documentation.
+- Project state: T01-T08 committed and verified; T09 gate passed, commit pending verification.
+- Current task: none; commit T09 before starting T10.
+- Next task: T10 Device validation and delivery.
+- Exact next action: commit reviewed T09 files as `refactor(T09): refine minimal UI and accessibility`, verify the commit, then begin T10 physical-phone validation/delivery.
+- Current blocker: none identified yet; checking emulator TalkBack availability. Physical phone remains disconnected.
+- Last verified implementation commit: `40ba8edab784129f6376b2462e59169e9eabdf82`, `feat(T08): restore backups with validation and rollback`; subject/files verified and post-commit working tree clean.
+- Uncommitted app changes: compact Today arrows/date, explicit 48 dp icon bounds, named time/switch/category actions, stronger chip borders, neutral switch surface and focused accessibility/layout/entry timing tests. Synthetic screenshots in docs/verification/t09.
 - Ponytail: available in this Codex skill catalog; installed instructions read from the discovered user skill path and applied at full level.
 
 ## Task ledger
@@ -25,21 +25,21 @@ Last updated: 2026-10-14, Asia/Kolkata
 | T06 Daily and weekly insights | done | 23 unit tests, 34 initial Android passes plus 2 corrected UI passes, 10,000-entry measurement, build/lint and light/dark/200% visual/security review. See docs/verification/t06.md. |
 | T07 Backup export | done | 23 unit/four export/one navigation tests, build/lint, actual picker cancel/export/file inspection, restart metadata and scoped visual/security review passed. See docs/verification/t07.md. |
 | T08 Safe backup restore | done | Full 23 unit/49 Android suite, eight strengthened restore tests, native picker/cancel/replace/restart/permission and visual/security review passed. See docs/verification/t08.md. |
-| T09 Design and accessibility review | not_started | |
+| T09 Design and accessibility review | done | 360 dp/both themes/200%, keyboard/rotation/long-name/contrast, live TalkBack keyboard save, 50 regression passes plus corrected normal/large layout checks; build/lint/security review. See docs/verification/t09.md. |
 | T10 Device validation and delivery | not_started | |
 
 Allowed statuses: `not_started`, `in_progress`, `blocked`, `done`. At most one task may be `in_progress` or `blocked`.
 
 ## Active task details
 
-- Objective: validate without mutation, then explicitly confirmed atomic replacement with device reminders reset/off.
-- Initial files: backup parser, TimeLogStore/DAO, ReminderController, application/ViewModel/Settings, backup tests and format documentation.
-- Checks performed: T07 commit verified. T08 full debug build, 23 unit tests, 49 Android tests and lint (0 errors, 5 existing warnings) passed; XML counts inspected. Includes eight restore safety tests and the preview/cancel/recreation/confirmation/permission UI test. Evidence: .toolchain/t08-checks.log and app/build/outputs/androidTest-results/connected/debug.
-- Required checks: round trip, malformed/truncated/oversized/types/version/IDs/names/references/settings/times/overlap, canceled preview, transaction rollback, repeated restore/restart, fresh permission state, visible UI, build/lint and security review.
+- Objective: review and refine the integrated minimal UI without adding product features.
+- Initial files: Today/Entry/Insights/Settings/Category controls, theme colors/typography and UI tests.
+- Checks performed: T08 commit verified. Debug build/lint passed. Initial layout test exposed 40 dp icon semantic bounds; fixed to explicit 48 dp and rerun passed at 360 dp/200%. Inspected Today, entry and nonempty charts in both themes. Real keyboard at 200% leaves Save visible; note/category draft retained through landscape and theme recreation and saved successfully. Theme text contrast >=5.39:1; measured chip borders and chart fill/track >3:1. TalkBack installed; its live navigation check remains pending.
+- Required checks: 360 dp, light/dark, 200% text, TalkBack, keyboard/insets, measured contrast and 48 dp touch targets, long names, landscape/recreation, representative screenshots and measured reminder-to-save flow.
 - Policy confirmed by user: keep the strict instant cutoff, even if it discards a final alarm delivered milliseconds late. SPEC updated; engine policy unchanged.
 - Blockers: phone disconnected again; current build was installed and its entry sheet shown previously. All instrumentation used only the emulator.
-- Completion: native picker/cancel/replace, restart, denied permission and no pending app alarm checked. Diff/security audit and visible preview passed. Commit subject: `feat(T08): restore backups with validation and rollback` (commit pending verification).
-- Next action: verify T08 commit and start T09. Physical-phone performance and final accessibility checks remain T09/T10.
+- Completion: corrected layout passed at normal/200%; actual TalkBack speech overlay and keyboard category-to-save checked. Emulator settings restored. Diff/security review passed. Commit subject: `refactor(T09): refine minimal UI and accessibility` (commit pending verification).
+- Next action: verify T09 commit and start T10. Physical reminders, phone performance and audible speech/gesture feedback remain untested.
 ## Decisions and environment
 
 - Product name: Time Log, a working name.
@@ -65,3 +65,4 @@ Keep the active checkpoint concise. Add one short history line per completed tas
 - 2026-10-13: T05 committed as 6d471a7, feat(T05): deliver local reminders and snooze actions. 17 unit/33 Android tests, native platform/visual/security checks and build/lint passed.
 - 2026-10-14: T06 committed as 0deafee, feat(T06): add daily and weekly time charts. 23 unit tests, 36 Android cases across original/corrected runs, 10,000-record measurement, build/lint and visual/security review passed.
 - 2026-10-14: T07 committed as faf3042, feat(T07): export versioned local backups. Build/lint, 23 unit/four export/one navigation tests, native picker cancel/export, file inspection, restart metadata and visual/security audit passed.
+- 2026-10-14: T08 committed as 40ba8ed, feat(T08): restore backups with validation and rollback. 23 unit/49 Android suite and eight strengthened restore tests, build/lint, native restore/cancel/restart/permission and visual/security audit passed.

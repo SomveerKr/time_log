@@ -38,19 +38,23 @@ fun InsightsScreen(vm: TimeLogViewModel) {
     LazyColumn(Modifier.fillMaxSize().testTag("insightsList"), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                FilterChip(!weekly, { vm.selectInsightsPeriod(false) }, label = { Text("Daily") }, modifier = Modifier.heightIn(min = 48.dp).testTag("insightsDaily"))
-                FilterChip(weekly, { vm.selectInsightsPeriod(true) }, label = { Text("Weekly") }, modifier = Modifier.heightIn(min = 48.dp).testTag("insightsWeekly"))
+                FilterChip(!weekly, { vm.selectInsightsPeriod(false) }, label = { Text("Daily") },
+                    border = FilterChipDefaults.filterChipBorder(enabled = true, selected = !weekly, borderColor = MaterialTheme.colorScheme.outline),
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("insightsDaily"))
+                FilterChip(weekly, { vm.selectInsightsPeriod(true) }, label = { Text("Weekly") },
+                    border = FilterChipDefaults.filterChipBorder(enabled = true, selected = weekly, borderColor = MaterialTheme.colorScheme.outline),
+                    modifier = Modifier.heightIn(min = 48.dp).testTag("insightsWeekly"))
             }
             Row(Modifier.fillMaxWidth()) {
-                IconButton(onClick = { vm.selectDate(vm.date.minusDays(if (weekly) 7 else 1)) }, modifier = Modifier.testTag("insightsPrevious")) {
+                IconButton(onClick = { vm.selectDate(vm.date.minusDays(if (weekly) 7 else 1)) }, modifier = Modifier.size(48.dp).testTag("insightsPrevious")) {
                     Icon(painterResource(R.drawable.ic_back), if (weekly) "Previous week" else "Previous day")
                 }
-                TextButton(onClick = { pickDate(context, vm.date, vm.now) { vm.selectDate(it) } }, modifier = Modifier.weight(1f).testTag("insightsDate")) {
+                TextButton(onClick = { pickDate(context, vm.date, vm.now) { vm.selectDate(it) } }, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("insightsDate")) {
                     Text(if (weekly) "${weekStart(vm.date).format(DateTimeFormatter.ofPattern("d MMM", locale))} - ${weekStart(vm.date).plusDays(6).format(dateFormat)}"
                         else vm.date.format(dateFormat), textAlign = TextAlign.Center)
                 }
                 IconButton(onClick = { vm.selectDate(minOf(today, vm.date.plusDays(if (weekly) 7 else 1))) },
-                    enabled = if (weekly) weekStart(vm.date) < weekStart(today) else vm.date < today, modifier = Modifier.testTag("insightsNext")) {
+                    enabled = if (weekly) weekStart(vm.date) < weekStart(today) else vm.date < today, modifier = Modifier.size(48.dp).testTag("insightsNext")) {
                     Icon(painterResource(R.drawable.ic_back), if (weekly) "Next week" else "Next day", Modifier.rotate(180f))
                 }
             }
