@@ -62,6 +62,12 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
     var permissionPurpose by rememberSaveable { mutableStateOf<String?>(null) }
     var sendTestAfterPermission by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
+    val exportDocument = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json"), vm::exportBackup)
+    val onExport: () -> Unit = {
+        val timestamp = java.time.Instant.ofEpochMilli(vm.now).atZone(vm.zone).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", java.util.Locale.ROOT))
+        try { exportDocument.launch("time-log-backup-$timestamp.json") }
+        catch (_: android.content.ActivityNotFoundException) { vm.showMessage("No file picker is available on this device.") }
+    }
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         vm.refresh()
         if (granted && sendTestAfterPermission) vm.sendTestReminder()
@@ -149,7 +155,7 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
         ) {
             when {
                 needsSetup -> Column(Modifier.verticalScroll(rememberScrollState())) { SetupScreen(vm, onEnable) }
-                settingsOpen -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { SettingsShell(vm, onEnable, onTest) }
+                settingsOpen -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { SettingsShell(vm, onEnable, onTest, onExport) }
                 insightsSelected -> InsightsScreen(vm)
                 else -> TodayScreen(vm)
             }
@@ -193,12 +199,22 @@ fun EmptyState(@DrawableRes icon: Int, @StringRes title: Int, @StringRes body: I
 }
 
 @Composable
-private fun SettingsShell(vm: TimeLogViewModel, onEnable: (AppSettings) -> Unit, onTest: () -> Unit) {
+private fun SettingsShell(vm: TimeLogViewModel, onEnable: (AppSettings) -> Unit, onTest: () -> Unit, onExport: () -> Unit) {
     var categoriesOpen by rememberSaveable { mutableStateOf(false) }
     ReminderSettings(vm, onEnable, onTest)
     Spacer(Modifier.height(24.dp))
     androidx.compose.material3.OutlinedButton(onClick = { categoriesOpen = true }, enabled = vm.ready,
         modifier = Modifier.fillMaxWidth()) { Text("Manage categories") }
+    Spacer(Modifier.height(24.dp))
+    Text("Backup", style = MaterialTheme.typography.titleLarge)
+    Spacer(Modifier.height(8.dp))
+    Text("Backups are unencrypted JSON containing your activity history and notes. Choose a private location. Your file provider may store the file in the cloud.",
+        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    androidx.compose.material3.OutlinedButton(onClick = onExport, enabled = vm.ready && !vm.busy,
+        modifier = Modifier.fillMaxWidth()) { Text("Export backup") }
+    Text(vm.lastExportMillis?.let { "Last successful export: ${formattedInstant(it, vm.zone, includeDate = true)}" } ?: "No backup exported yet",
+        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    vm.backupError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     Spacer(Modifier.height(24.dp))
     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     Spacer(Modifier.height(28.dp))

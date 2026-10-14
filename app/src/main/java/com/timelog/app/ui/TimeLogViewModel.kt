@@ -1,6 +1,8 @@
 package com.timelog.app.ui
 
 import android.os.Bundle
+import android.net.Uri
+import com.timelog.app.backup.BackupExport
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -69,11 +71,14 @@ class TimeLogViewModel(
     private val clock: Clock = Clock.systemUTC(),
     private val reminders: ReminderController? = null,
     val reminderOutput: AndroidReminderOutput? = null,
+    private val backups: BackupExport? = null,
 ) : ViewModel() {
     var now by mutableLongStateOf(currentMinute()); private set
     var zone by mutableStateOf(ZoneId.systemDefault()); private set
     var date by mutableStateOf(saved.get<String>("date")?.let(LocalDate::parse) ?: localDate(now, zone)); private set
     var weeklyInsights by mutableStateOf(saved.get<Boolean>("weeklyInsights") ?: false); private set
+    var lastExportMillis by mutableStateOf<Long?>(null); private set
+    var backupError by mutableStateOf<String?>(null); private set
     var categories by mutableStateOf(emptyList<Category>()); private set
     var settings by mutableStateOf<AppSettings?>(null); private set
     var entries by mutableStateOf(emptyList<TimeEntry>()); private set
@@ -105,6 +110,7 @@ class TimeLogViewModel(
             try {
                 store.initialize()
                 coroutineScope {
+                    launch { lastExportMillis = backups?.lastSuccess() }
                     launch { store.categories.collect { categories = it } }
                     launch { store.settings.collect { settings = it; updateReminderStatus() } }
                     launch {
@@ -207,6 +213,19 @@ class TimeLogViewModel(
     fun closeDraft() { if (!busy) { persistDraft(null); error = null; archivedMatch = null; reminderGaps = emptyList() } }
     fun consumeMessage() { message = null }
     fun showMessage(value: String) { message = value }
+    fun exportBackup(uri: Uri?) {
+        if (uri == null || busy) return
+        busy = true
+        backupError = null
+        viewModelScope.launch {
+            try {
+                lastExportMillis = backups?.export(uri) ?: throw IllegalStateException("Backup export is unavailable")
+                message = "Backup exported"
+            } catch (e: CancellationException) { throw e }
+            catch (_: Exception) { backupError = "Export could not finish. Local data is unchanged. The selected file may be incomplete; try a new file." }
+            finally { busy = false }
+        }
+    }
     fun sendTestReminder() {
         viewModelScope.launch {
             try { reminders?.prepareTest(); reminderOutput?.sendTest() }
@@ -302,7 +321,7 @@ class TimeLogViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as TimeLogApplication
-                TimeLogViewModel(app.store, createSavedStateHandle(), reminders = app.reminders, reminderOutput = app.reminderOutput)
+                TimeLogViewModel(app.store, createSavedStateHandle(), reminders = app.reminders, reminderOutput = app.reminderOutput, backups = app.backups)
             }
         }
     }

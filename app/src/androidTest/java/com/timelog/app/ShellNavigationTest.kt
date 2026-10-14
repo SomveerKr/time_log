@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import org.junit.Rule
 import org.junit.Test
 
@@ -31,10 +32,10 @@ class ShellNavigationTest {
         compose.onNodeWithText("Insights").performClick()
         compose.onNodeWithTag("insightsDaily").assertIsDisplayed()
         compose.onNodeWithContentDescription("Settings").performClick()
-        compose.onNodeWithText("Your time stays yours.").assertIsDisplayed()
+        compose.onNodeWithText("Your time stays yours.").performScrollTo().assertIsDisplayed()
 
         compose.activityRule.scenario.recreate()
-        compose.onNodeWithText("Your time stays yours.").assertIsDisplayed()
+        compose.onNodeWithText("Your time stays yours.").performScrollTo().assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithTag("insightsDaily").assertIsDisplayed()
         compose.onAllNodesWithText("Today")[0].performClick()

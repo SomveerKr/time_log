@@ -5,6 +5,7 @@ import com.timelog.app.data.TimeLogDatabase
 import com.timelog.app.data.TimeLogStore
 import com.timelog.app.reminders.AndroidReminderOutput
 import com.timelog.app.reminders.ReminderController
+import com.timelog.app.backup.BackupExport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,6 +15,7 @@ class TimeLogApplication : Application() {
     val store by lazy { TimeLogStore(TimeLogDatabase.open(this)) }
     val reminderOutput by lazy { AndroidReminderOutput(this) }
     val reminders by lazy { ReminderController(store, reminderOutput) }
+    val backups by lazy { BackupExport(this, store) }
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {

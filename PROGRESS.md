@@ -4,13 +4,13 @@ Last updated: 2026-10-14, Asia/Kolkata
 
 ## Current checkpoint
 
-- Project state: T01-T05 committed and verified; T06 checks passed, commit pending verification.
-- Current task: none; T06 completion checkpoint.
-- Next task: T07 Backup export.
-- Exact next action: commit `feat(T06): add daily and weekly time charts`, verify subject/files and remaining tree, then start T07.
-- Current blocker: none for T06. Devices disconnected between sessions; emulator is restarting. API 34 phone already has the current build; reconnect it to continue the demonstration.
-- Last verified implementation commit: `6d471a7c2a63c61ef690444447f4e2539601df31`, `feat(T05): deliver local reminders and snooze actions`; subject/files verified and post-commit working tree clean.
-- Uncommitted app changes: Insights aggregation/screen, week-bounded ViewModel query, saved report period, shared category marker/empty state, fixture/UI/performance tests and navigation assertions.
+- Project state: T01-T06 committed and verified; T07 gate passed, commit pending verification.
+- Current task: none; commit T07 before starting T08.
+- Next task: T08 Safe backup restore.
+- Exact next action: commit the reviewed T07 files as `feat(T07): export versioned local backups`, verify the commit, then start T08 safe restore.
+- Current blocker: none for T07; local emulator is restarting. Phone is disconnected and has the T06 build; physical testing remains T10.
+- Last verified implementation commit: `0deafee12f95193ef660a2273602e2512672ef3c`, `feat(T06): add daily and weekly time charts`; subject/files verified and post-commit working tree clean.
+- Uncommitted app changes: backup snapshot/writer/export metadata, application/ViewModel/Settings picker integration, serialization/failure/consistency tests, navigation scroll assertions and JSON contract documentation.
 - Ponytail: available in this Codex skill catalog; installed instructions read from the discovered user skill path and applied at full level.
 
 ## Task ledger
@@ -22,8 +22,8 @@ Last updated: 2026-10-14, Asia/Kolkata
 | T03 Fast entry and history | done | 4 gap tests, 20 Android integration tests, fresh build/lint, offline/restart/rotation and visual/security checks passed. See docs/verification/t03.md. |
 | T04 Reminder rules and settings | done | 16 unit/24 Android tests, migration preservation, fresh build/lint and light/dark setup/settings/security review passed. See docs/verification/t04.md. |
 | T05 Android notification delivery | done | 17 unit/33 Android tests, build/lint, live emulator alarm/snooze/reboot/Doze/permissions/timezone/quiet checks, visual/security review passed. See docs/verification/t05.md. |
-| T06 Daily and weekly insights | done | 23 unit tests, 34 initial Android passes plus 2 corrected UI passes, 10,000-entry measurement, build/lint and light/dark/200% visual/security review. See docs/verification/t06.md. Commit pending verification. |
-| T07 Backup export | not_started | |
+| T06 Daily and weekly insights | done | 23 unit tests, 34 initial Android passes plus 2 corrected UI passes, 10,000-entry measurement, build/lint and light/dark/200% visual/security review. See docs/verification/t06.md. |
+| T07 Backup export | done | 23 unit/four export/one navigation tests, build/lint, actual picker cancel/export/file inspection, restart metadata and scoped visual/security review passed. See docs/verification/t07.md. |
 | T08 Safe backup restore | not_started | |
 | T09 Design and accessibility review | not_started | |
 | T10 Device validation and delivery | not_started | |
@@ -32,13 +32,14 @@ Allowed statuses: `not_started`, `in_progress`, `blocked`, `done`. At most one t
 
 ## Active task details
 
-- Objective: T06 daily category totals/shares and seven-day weekly totals/bars, clipped at local boundaries with stable ordering and live data updates.
-- Initial files: TimeRanges, TimeLogViewModel, TimeLogApp, category styles, new aggregation/Insights tests.
-- Checks performed: debug build and 23 unit tests passed. Original Android run: 34 passed, 2 Insights tests rejected invalid fixture IDs; fixtures corrected. After recovering the emulator, both corrected Insights UI tests passed in a 28-second run. The 10,000-entry emulator check measured query 297.596 ms and aggregation 260.0331 ms. Fresh lint passed (0 errors, 4 advisories). An intermediate install failure during emulator system-server crash was not counted as a pass.
-- Required checks: passed. Reference/empty/midnight/Monday/DST/rename/archive/order/equality fixtures, live UI updates, 10,000-record measurement, light/dark 200% labels, fresh lint and scoped diff/security review. Details: docs/verification/t06.md.
+- Objective: T07 full portable JSON export via Android's create-document picker, consistent snapshot and honest success/failure state.
+- Initial files: TimeLogStore/DAO, application/ViewModel/Settings, backup exclusion XML, new backup writer/tests and format documentation.
+- Checks performed: T06 commit verified; T07 debug build, 23 unit tests, lint (0 errors, 5 warnings), four Android export tests and the navigation test passed. Logs: .toolchain/t07-checks.log and .toolchain/t07-navigation.log. Existing backup exclusions inspected; Room and local metadata remain excluded.
+- Required checks: portable field/Unicode/archive/empty serialization, snapshot consistency, cancellation/partial/write/close failure, synthetic actual file, manifest/backup rules, build/lint and visible UI.
 - Policy confirmed by user: keep the strict instant cutoff, even if it discards a final alarm delivered milliseconds late. SPEC updated; engine policy unchanged.
 - Blockers: phone disconnected again; current build was installed and its entry sheet shown previously. All instrumentation used only the emulator.
-- Next action: verify T06 commit, then implement T07 backup export. Physical-phone chart performance and final accessibility checks remain T09/T10.
+- Next action: T07 commit pending verification, then T08 parser, validation and atomic replacement. Physical-phone performance and final accessibility checks remain T09/T10.
+- Completion: actual picker cancellation/export, 1,981-byte synthetic file inspection, persisted success after restart, visible screenshot and scoped security/diff audit passed. See docs/verification/t07.md. Commit subject: `feat(T07): export versioned local backups` (commit pending verification).
 ## Decisions and environment
 
 - Product name: Time Log, a working name.
@@ -62,4 +63,4 @@ Keep the active checkpoint concise. Add one short history line per completed tas
 
 - 2026-10-13: T04 committed as cf49baf, feat(T04): define reminder schedule and configurable hours. 16 unit/24 Android tests, migration, build/lint and visual/security checks passed.
 - 2026-10-13: T05 committed as 6d471a7, feat(T05): deliver local reminders and snooze actions. 17 unit/33 Android tests, native platform/visual/security checks and build/lint passed.
-- 2026-10-14: T06 checks passed; `feat(T06): add daily and weekly time charts`, commit pending verification. 23 unit tests, 36 Android cases across original/corrected runs, 10,000-record measurement, build/lint and visual/security review passed.
+- 2026-10-14: T06 committed as 0deafee, feat(T06): add daily and weekly time charts. 23 unit tests, 36 Android cases across original/corrected runs, 10,000-record measurement, build/lint and visual/security review passed.
