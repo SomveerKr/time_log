@@ -5,6 +5,8 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.ui.unit.dp
 import com.timelog.app.data.AppSettings
+import com.timelog.app.data.EntryInput
+import com.timelog.app.data.MINUTE_MILLIS
 import com.timelog.app.ui.TimeLogViewModel
 import com.timelog.app.reminders.TEST_REQUEST
 import kotlinx.coroutines.runBlocking
@@ -44,9 +46,15 @@ class AccessibilityLayoutTest {
         compose.waitUntil(15_000) { vm.ready }
         runBlocking { app.store.saveSettings(AppSettings(onboardingComplete = true)) }
         compose.waitUntil(10_000) { vm.settings?.onboardingComplete == true }
+        val category = vm.categories.first { it.name == "Chores and travel" }
+        val history = runBlocking {
+            app.store.database.dao().deleteAllEntries()
+            app.store.save(EntryInput(category.id, vm.now - 120 * MINUTE_MILLIS, vm.now - 60 * MINUTE_MILLIS))
+        }
+        compose.waitUntil(10_000) { vm.entries.any { it.id == history.id } }
         val started = android.os.SystemClock.elapsedRealtime()
         compose.runOnUiThread { vm.openRequest(TEST_REQUEST) }
-        compose.onNodeWithText("Chores and travel").performClick()
+        compose.onNodeWithTag("first-category-${category.id}").performClick()
         val saving = android.os.SystemClock.elapsedRealtime()
         compose.onNodeWithTag("saveEntry").performClick()
         compose.waitUntil(10_000) { vm.draft == null && !vm.busy }
