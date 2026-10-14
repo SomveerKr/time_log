@@ -4,13 +4,13 @@ Last updated: 2026-10-14, Asia/Kolkata
 
 ## Current checkpoint
 
-- Project state: T01-T06 committed and verified; T07 gate passed, commit pending verification.
-- Current task: none; commit T07 before starting T08.
-- Next task: T08 Safe backup restore.
-- Exact next action: commit the reviewed T07 files as `feat(T07): export versioned local backups`, verify the commit, then start T08 safe restore.
-- Current blocker: none for T07; local emulator is restarting. Phone is disconnected and has the T06 build; physical testing remains T10.
-- Last verified implementation commit: `0deafee12f95193ef660a2273602e2512672ef3c`, `feat(T06): add daily and weekly time charts`; subject/files verified and post-commit working tree clean.
-- Uncommitted app changes: backup snapshot/writer/export metadata, application/ViewModel/Settings picker integration, serialization/failure/consistency tests, navigation scroll assertions and JSON contract documentation.
+- Project state: T01-T07 committed and verified; T08 gate passed, commit pending verification.
+- Current task: none; commit T08 before starting T09.
+- Next task: T09 Design and accessibility review.
+- Exact next action: commit reviewed T08 files as `feat(T08): restore backups with validation and rollback`, verify the commit, then start T09 accessibility/design review.
+- Current blocker: none for T08. Phone is disconnected; physical testing remains T10.
+- Last verified implementation commit: `faf304213caf59e9ecbd32edc9799b7962fd0ee3`, `feat(T07): export versioned local backups`; subject/files verified and post-commit working tree clean.
+- Uncommitted app changes: BackupRestore parser/validation/replacement, DAO delete operations, reminder-locked restore, application/ViewModel/picker/confirmation integration, eight data-safety tests and one restore UI test, backup format documentation.
 - Ponytail: available in this Codex skill catalog; installed instructions read from the discovered user skill path and applied at full level.
 
 ## Task ledger
@@ -24,7 +24,7 @@ Last updated: 2026-10-14, Asia/Kolkata
 | T05 Android notification delivery | done | 17 unit/33 Android tests, build/lint, live emulator alarm/snooze/reboot/Doze/permissions/timezone/quiet checks, visual/security review passed. See docs/verification/t05.md. |
 | T06 Daily and weekly insights | done | 23 unit tests, 34 initial Android passes plus 2 corrected UI passes, 10,000-entry measurement, build/lint and light/dark/200% visual/security review. See docs/verification/t06.md. |
 | T07 Backup export | done | 23 unit/four export/one navigation tests, build/lint, actual picker cancel/export/file inspection, restart metadata and scoped visual/security review passed. See docs/verification/t07.md. |
-| T08 Safe backup restore | not_started | |
+| T08 Safe backup restore | done | Full 23 unit/49 Android suite, eight strengthened restore tests, native picker/cancel/replace/restart/permission and visual/security review passed. See docs/verification/t08.md. |
 | T09 Design and accessibility review | not_started | |
 | T10 Device validation and delivery | not_started | |
 
@@ -32,14 +32,14 @@ Allowed statuses: `not_started`, `in_progress`, `blocked`, `done`. At most one t
 
 ## Active task details
 
-- Objective: T07 full portable JSON export via Android's create-document picker, consistent snapshot and honest success/failure state.
-- Initial files: TimeLogStore/DAO, application/ViewModel/Settings, backup exclusion XML, new backup writer/tests and format documentation.
-- Checks performed: T06 commit verified; T07 debug build, 23 unit tests, lint (0 errors, 5 warnings), four Android export tests and the navigation test passed. Logs: .toolchain/t07-checks.log and .toolchain/t07-navigation.log. Existing backup exclusions inspected; Room and local metadata remain excluded.
-- Required checks: portable field/Unicode/archive/empty serialization, snapshot consistency, cancellation/partial/write/close failure, synthetic actual file, manifest/backup rules, build/lint and visible UI.
+- Objective: validate without mutation, then explicitly confirmed atomic replacement with device reminders reset/off.
+- Initial files: backup parser, TimeLogStore/DAO, ReminderController, application/ViewModel/Settings, backup tests and format documentation.
+- Checks performed: T07 commit verified. T08 full debug build, 23 unit tests, 49 Android tests and lint (0 errors, 5 existing warnings) passed; XML counts inspected. Includes eight restore safety tests and the preview/cancel/recreation/confirmation/permission UI test. Evidence: .toolchain/t08-checks.log and app/build/outputs/androidTest-results/connected/debug.
+- Required checks: round trip, malformed/truncated/oversized/types/version/IDs/names/references/settings/times/overlap, canceled preview, transaction rollback, repeated restore/restart, fresh permission state, visible UI, build/lint and security review.
 - Policy confirmed by user: keep the strict instant cutoff, even if it discards a final alarm delivered milliseconds late. SPEC updated; engine policy unchanged.
 - Blockers: phone disconnected again; current build was installed and its entry sheet shown previously. All instrumentation used only the emulator.
-- Next action: T07 commit pending verification, then T08 parser, validation and atomic replacement. Physical-phone performance and final accessibility checks remain T09/T10.
-- Completion: actual picker cancellation/export, 1,981-byte synthetic file inspection, persisted success after restart, visible screenshot and scoped security/diff audit passed. See docs/verification/t07.md. Commit subject: `feat(T07): export versioned local backups` (commit pending verification).
+- Completion: native picker/cancel/replace, restart, denied permission and no pending app alarm checked. Diff/security audit and visible preview passed. Commit subject: `feat(T08): restore backups with validation and rollback` (commit pending verification).
+- Next action: verify T08 commit and start T09. Physical-phone performance and final accessibility checks remain T09/T10.
 ## Decisions and environment
 
 - Product name: Time Log, a working name.
@@ -64,3 +64,4 @@ Keep the active checkpoint concise. Add one short history line per completed tas
 - 2026-10-13: T04 committed as cf49baf, feat(T04): define reminder schedule and configurable hours. 16 unit/24 Android tests, migration, build/lint and visual/security checks passed.
 - 2026-10-13: T05 committed as 6d471a7, feat(T05): deliver local reminders and snooze actions. 17 unit/33 Android tests, native platform/visual/security checks and build/lint passed.
 - 2026-10-14: T06 committed as 0deafee, feat(T06): add daily and weekly time charts. 23 unit tests, 36 Android cases across original/corrected runs, 10,000-record measurement, build/lint and visual/security review passed.
+- 2026-10-14: T07 committed as faf3042, feat(T07): export versioned local backups. Build/lint, 23 unit/four export/one navigation tests, native picker cancel/export, file inspection, restart metadata and visual/security audit passed.

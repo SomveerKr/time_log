@@ -1,6 +1,9 @@
 package com.timelog.app.reminders
 
 import androidx.room.withTransaction
+import com.timelog.app.backup.BackupSnapshot
+import com.timelog.app.backup.replaceBackup
+import kotlinx.coroutines.CancellationException
 import com.timelog.app.data.*
 import com.timelog.app.ui.TimeRange
 import com.timelog.app.ui.unloggedRanges
@@ -46,6 +49,14 @@ class ReminderController(
         store.initialize()
         if (invalidate || dao.deviceState()!!.zoneId != zone().id) store.invalidateSchedule(zone().id)
         reconcileLocked()
+    }
+
+    suspend fun restore(snapshot: BackupSnapshot): Boolean = mutex.withLock {
+        store.replaceBackup(snapshot, clock.millis(), zone().id)
+        // Once committed, a platform cancellation failure must not be reported as a rolled-back restore.
+        try { reconcileLocked(); true }
+        catch (error: CancellationException) { throw error }
+        catch (_: Exception) { false }
     }
 
     private suspend fun reconcileLocked() {

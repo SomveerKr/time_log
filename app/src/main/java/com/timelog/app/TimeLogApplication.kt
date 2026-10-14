@@ -16,6 +16,7 @@ class TimeLogApplication : Application() {
     val reminderOutput by lazy { AndroidReminderOutput(this) }
     val reminders by lazy { ReminderController(store, reminderOutput) }
     val backups by lazy { BackupExport(this, store) }
+    val backupRestore by lazy { com.timelog.app.backup.BackupRestore(this) }
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {

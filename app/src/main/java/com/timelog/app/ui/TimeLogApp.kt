@@ -63,6 +63,11 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
     var sendTestAfterPermission by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val exportDocument = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json"), vm::exportBackup)
+    val restoreDocument = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument(), vm::previewBackup)
+    val onRestore: () -> Unit = {
+        try { restoreDocument.launch(arrayOf("application/json", "text/json", "text/plain")) }
+        catch (_: android.content.ActivityNotFoundException) { vm.showMessage("No file picker is available on this device.") }
+    }
     val onExport: () -> Unit = {
         val timestamp = java.time.Instant.ofEpochMilli(vm.now).atZone(vm.zone).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm", java.util.Locale.ROOT))
         try { exportDocument.launch("time-log-backup-$timestamp.json") }
@@ -155,13 +160,28 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
         ) {
             when {
                 needsSetup -> Column(Modifier.verticalScroll(rememberScrollState())) { SetupScreen(vm, onEnable) }
-                settingsOpen -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { SettingsShell(vm, onEnable, onTest, onExport) }
+                settingsOpen -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { SettingsShell(vm, onEnable, onTest, onExport, onRestore) }
                 insightsSelected -> InsightsScreen(vm)
                 else -> TodayScreen(vm)
             }
         }
     }
     vm.draft?.let { EntrySheet(vm, it) }
+    vm.restorePreview?.let { preview ->
+        androidx.compose.material3.AlertDialog(onDismissRequest = vm::cancelRestore,
+            title = { Text("Restore backup?") },
+            text = { Column(Modifier.verticalScroll(rememberScrollState())) {
+                Text("Backup from ${java.time.Instant.ofEpochMilli(preview.exportedAtMillis).atZone(vm.zone).format(java.time.format.DateTimeFormatter.ofPattern("d MMM uuuu, h:mm a"))}")
+                Text("${preview.categories.size} categories, ${preview.entries.size} entries")
+                Spacer(Modifier.height(16.dp))
+                Text("This replaces the data currently on this device. Reminders will stay off until you enable them again.")
+                androidx.compose.material3.TextButton(onClick = onExport, enabled = !vm.busy) { Text("Export current data") }
+                vm.backupError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                if (vm.busy) Text("Working...")
+            } },
+            confirmButton = { androidx.compose.material3.TextButton(onClick = vm::confirmRestore, enabled = !vm.busy) { Text("Restore and replace") } },
+            dismissButton = { androidx.compose.material3.TextButton(onClick = vm::cancelRestore, enabled = !vm.busy) { Text("Cancel") } })
+    }
     if (permissionPurpose != null) androidx.compose.material3.AlertDialog(onDismissRequest = { permissionPurpose = null },
         title = { Text("Allow time check-ins?") }, text = { Text("Time Log needs notifications for scheduled reminders. You can keep logging if you decline.") },
         confirmButton = { androidx.compose.material3.TextButton(onClick = {
@@ -199,7 +219,7 @@ fun EmptyState(@DrawableRes icon: Int, @StringRes title: Int, @StringRes body: I
 }
 
 @Composable
-private fun SettingsShell(vm: TimeLogViewModel, onEnable: (AppSettings) -> Unit, onTest: () -> Unit, onExport: () -> Unit) {
+private fun SettingsShell(vm: TimeLogViewModel, onEnable: (AppSettings) -> Unit, onTest: () -> Unit, onExport: () -> Unit, onRestore: () -> Unit) {
     var categoriesOpen by rememberSaveable { mutableStateOf(false) }
     ReminderSettings(vm, onEnable, onTest)
     Spacer(Modifier.height(24.dp))
@@ -214,6 +234,9 @@ private fun SettingsShell(vm: TimeLogViewModel, onEnable: (AppSettings) -> Unit,
         modifier = Modifier.fillMaxWidth()) { Text("Export backup") }
     Text(vm.lastExportMillis?.let { "Last successful export: ${formattedInstant(it, vm.zone, includeDate = true)}" } ?: "No backup exported yet",
         style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    androidx.compose.material3.OutlinedButton(onClick = onRestore, enabled = vm.ready && !vm.busy,
+        modifier = Modifier.fillMaxWidth()) { Text("Restore backup") }
+    if (vm.busy) Text("Working...")
     vm.backupError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     Spacer(Modifier.height(24.dp))
     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

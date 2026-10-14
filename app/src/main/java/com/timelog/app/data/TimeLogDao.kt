@@ -51,6 +51,12 @@ internal interface TimeLogDao {
     @Query("DELETE FROM entries WHERE id = :id")
     suspend fun deleteEntry(id: String)
 
+    @Query("DELETE FROM entries")
+    suspend fun deleteAllEntries()
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAllCategories()
+
     @Query("SELECT * FROM settings WHERE id = 1")
     fun observeSettings(): Flow<AppSettings?>
 

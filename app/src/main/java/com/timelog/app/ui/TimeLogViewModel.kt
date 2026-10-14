@@ -3,6 +3,9 @@ package com.timelog.app.ui
 import android.os.Bundle
 import android.net.Uri
 import com.timelog.app.backup.BackupExport
+import com.timelog.app.backup.BackupRestore
+import com.timelog.app.backup.BackupSnapshot
+import com.timelog.app.backup.BackupValidationException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -72,6 +75,7 @@ class TimeLogViewModel(
     private val reminders: ReminderController? = null,
     val reminderOutput: AndroidReminderOutput? = null,
     private val backups: BackupExport? = null,
+    private val backupRestore: BackupRestore? = null,
 ) : ViewModel() {
     var now by mutableLongStateOf(currentMinute()); private set
     var zone by mutableStateOf(ZoneId.systemDefault()); private set
@@ -79,6 +83,7 @@ class TimeLogViewModel(
     var weeklyInsights by mutableStateOf(saved.get<Boolean>("weeklyInsights") ?: false); private set
     var lastExportMillis by mutableStateOf<Long?>(null); private set
     var backupError by mutableStateOf<String?>(null); private set
+    var restorePreview by mutableStateOf<BackupSnapshot?>(null); private set
     var categories by mutableStateOf(emptyList<Category>()); private set
     var settings by mutableStateOf<AppSettings?>(null); private set
     var entries by mutableStateOf(emptyList<TimeEntry>()); private set
@@ -226,6 +231,34 @@ class TimeLogViewModel(
             finally { busy = false }
         }
     }
+    fun previewBackup(uri: Uri?) {
+        if (uri == null || busy) return
+        busy = true; backupError = null; restorePreview = null
+        viewModelScope.launch {
+            try { restorePreview = backupRestore?.read(uri) ?: throw IllegalStateException("Restore unavailable") }
+            catch (error: CancellationException) { throw error }
+            catch (error: BackupValidationException) { backupError = "${error.message} Local data and reminders are unchanged." }
+            catch (_: Exception) { backupError = "Cannot open this backup. Local data and reminders are unchanged." }
+            finally { busy = false }
+        }
+    }
+    fun cancelRestore() { if (!busy) { restorePreview = null; backupError = null } }
+    fun confirmRestore() {
+        val snapshot = restorePreview ?: return
+        if (busy) return
+        busy = true; backupError = null
+        viewModelScope.launch {
+            try {
+                val reconciled = reminders?.restore(snapshot) ?: throw IllegalStateException("Restore unavailable")
+                restorePreview = null; persistDraft(null); error = null; archivedMatch = null; reminderGaps = emptyList()
+                message = if (reconciled) "Backup restored. Reminders are off."
+                    else "Backup restored. Reminders are off; reopen the app to clear any old notification."
+                updateReminderStatus()
+            } catch (error: CancellationException) { throw error }
+            catch (_: Exception) { backupError = "Restore could not finish. Local data and reminders are unchanged. Try again." }
+            finally { busy = false }
+        }
+    }
     fun sendTestReminder() {
         viewModelScope.launch {
             try { reminders?.prepareTest(); reminderOutput?.sendTest() }
@@ -321,7 +354,7 @@ class TimeLogViewModel(
         val Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as TimeLogApplication
-                TimeLogViewModel(app.store, createSavedStateHandle(), reminders = app.reminders, reminderOutput = app.reminderOutput, backups = app.backups)
+                TimeLogViewModel(app.store, createSavedStateHandle(), reminders = app.reminders, reminderOutput = app.reminderOutput, backups = app.backups, backupRestore = app.backupRestore)
             }
         }
     }
