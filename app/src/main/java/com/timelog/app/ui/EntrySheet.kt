@@ -122,7 +122,7 @@ private fun TimeField(label: String, tag: String, millis: Long, zone: ZoneId, en
     }
 }
 
-private val categoryColors = listOf(0xFF477A59, 0xFF577AA5, 0xFF8E6649, 0xFF8B669B, 0xFF627D83, 0xFF967B40, 0xFF9E6262, 0xFF6D7785)
+val categoryColors = listOf(0xFF477A59, 0xFF577AA5, 0xFF8E6649, 0xFF8B669B, 0xFF627D83, 0xFF967B40, 0xFF9E6262, 0xFF6D7785)
 
 @Composable
 private fun CategoryChoices(vm: TimeLogViewModel, selected: String?, retained: String?, second: Boolean, onSelected: (String) -> Unit) {

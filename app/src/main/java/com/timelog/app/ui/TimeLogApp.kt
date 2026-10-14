@@ -150,11 +150,7 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
             when {
                 needsSetup -> Column(Modifier.verticalScroll(rememberScrollState())) { SetupScreen(vm, onEnable) }
                 settingsOpen -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp)) { SettingsShell(vm, onEnable, onTest) }
-                insightsSelected -> Column(Modifier.padding(20.dp)) { EmptyState(
-                    R.drawable.ic_insights,
-                    R.string.insights_empty_title,
-                    R.string.insights_empty_body,
-                ) }
+                insightsSelected -> InsightsScreen(vm)
                 else -> TodayScreen(vm)
             }
         }
@@ -170,7 +166,7 @@ fun TimeLogApp(vm: TimeLogViewModel = viewModel(factory = TimeLogViewModel.Facto
 }
 
 @Composable
-private fun EmptyState(@DrawableRes icon: Int, @StringRes title: Int, @StringRes body: Int) {
+fun EmptyState(@DrawableRes icon: Int, @StringRes title: Int, @StringRes body: Int) {
     Column(
         Modifier.fillMaxWidth().padding(vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

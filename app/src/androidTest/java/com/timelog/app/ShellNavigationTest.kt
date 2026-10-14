@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import org.junit.Rule
 import org.junit.Test
@@ -28,14 +29,14 @@ class ShellNavigationTest {
         }
         compose.onNodeWithText("Log time").assertIsEnabled()
         compose.onNodeWithText("Insights").performClick()
-        compose.onNodeWithText("A little time, a clearer picture.").assertIsDisplayed()
+        compose.onNodeWithTag("insightsDaily").assertIsDisplayed()
         compose.onNodeWithContentDescription("Settings").performClick()
         compose.onNodeWithText("Your time stays yours.").assertIsDisplayed()
 
         compose.activityRule.scenario.recreate()
         compose.onNodeWithText("Your time stays yours.").assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
-        compose.onNodeWithText("A little time, a clearer picture.").assertIsDisplayed()
+        compose.onNodeWithTag("insightsDaily").assertIsDisplayed()
         compose.onAllNodesWithText("Today")[0].performClick()
         compose.onNodeWithText("Log time").assertIsEnabled()
     }

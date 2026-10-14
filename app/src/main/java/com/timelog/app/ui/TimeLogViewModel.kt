@@ -73,6 +73,7 @@ class TimeLogViewModel(
     var now by mutableLongStateOf(currentMinute()); private set
     var zone by mutableStateOf(ZoneId.systemDefault()); private set
     var date by mutableStateOf(saved.get<String>("date")?.let(LocalDate::parse) ?: localDate(now, zone)); private set
+    var weeklyInsights by mutableStateOf(saved.get<Boolean>("weeklyInsights") ?: false); private set
     var categories by mutableStateOf(emptyList<Category>()); private set
     var settings by mutableStateOf<AppSettings?>(null); private set
     var entries by mutableStateOf(emptyList<TimeEntry>()); private set
@@ -161,12 +162,14 @@ class TimeLogViewModel(
         updateQuery()
     }
 
+    fun selectInsightsPeriod(weekly: Boolean) { weeklyInsights = weekly; saved["weeklyInsights"] = weekly }
+
     private fun updateQuery() {
         val next = queryRange()
         if (query.value != next) { loading = true; entries = emptyList(); query.value = next }
     }
 
-    private fun queryRange() = dayRange(date, zone).let { it.copy(start = it.start - 120 * MINUTE_MILLIS) }
+    private fun queryRange() = weekRange(date, zone).let { it.copy(start = it.start - 120 * MINUTE_MILLIS) }
     private fun currentMinute() = clock.millis() / MINUTE_MILLIS * MINUTE_MILLIS
 
     fun openNew(fillGap: Boolean = false) {
