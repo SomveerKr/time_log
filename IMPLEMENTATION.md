@@ -107,6 +107,8 @@ Initialize Git only in the intended dedicated project root when no suitable repo
 
 ### T10 Device validation and delivery
 
+User-authorized test exception (15 October 2026): use a temporary accelerated debug build for the requested 10-minute test, record the actual interval and limitations, then restore the normal source/APK and original phone settings. This supersedes the earlier deferral only for the accelerated run; do not claim normal hourly reliability from it.
+
 **Scope:** Validate the finished flow on the user's Android phone or an explicitly documented representative physical Android phone. Produce a debug APK and build/install/use guide, backup instructions, reminder troubleshooting, and known limitations. Leave release signing and store publishing outside scope.
 
 **Required checks:** Full unit suite, lint, debug build, relevant instrumented/UI tests; real-phone reminder checks with screen off, app closed normally, a restart, selected hours, snooze, and battery-saving state. Observe at least two consecutive real scheduled reminders and a quiet-hours boundary. Verify local entry and backup restore offline. Test force-stop recovery after reopening and describe the platform limitation honestly. Do not mark device validation complete without physical-device evidence.

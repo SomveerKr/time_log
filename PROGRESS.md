@@ -4,14 +4,15 @@ Last updated: 2026-10-15, Asia/Kolkata
 
 ## Current checkpoint
 
-- Project state: T01-T09 committed and verified; T10 active.
-- Current task: T10 Device validation and delivery.
-- Next task: none; complete the final physical-device gate.
-- Exact next action: commit the reviewed T09 test selector repair as `test(T09): disambiguate reminder entry category selection`, verify it, then complete T10 final tests and install the APK on the connected phone.
-- Current blocker: none; user reconnected/unlocked the phone and ADB sees it as authorized.
-- Last verified implementation commit: `92ff9fb9b8388d4d1914dd2a698d5badc639aece`, `refactor(T09): refine minimal UI and accessibility`; subject/files verified and post-commit working tree clean.
-- Uncommitted changes: README/BUILDING delivery guide and docs/verification/t10.md; focused T09 test repair starting. No production app code changes.
-- Ponytail: available in this Codex skill catalog; installed instructions read from the discovered user skill path and applied at full level.
+- Project state: T01-T10 complete for the requested debug-build handoff, including the user-approved accelerated device test.
+- Current task: none; T10 complete.
+- Next task: none in IMPLEMENTATION.md.
+- Exact next action: use the installed normal Time Log build or the APK at app/build/outputs/apk/debug/app-debug.apk. For future changes, inspect Git and this checkpoint first. Extended hourly/overnight and accepted snooze observations are optional follow-up checks with the documented limits.
+- Current blocker: none.
+- Last verified predecessor: `72d749870df2ab79c78424916e99875117b75fdd`, `test(T09): disambiguate reminder entry category selection`.
+- Completion commit: `chore(T10): validate Android build and document delivery`, commit pending verification; resolve its SHA from Git after committing.
+- Task files: README.md, BUILDING.md, PROGRESS.md, SPEC.md, IMPLEMENTATION.md and docs/verification/t10.md. Documentation only; all temporary app/test source changes reverted. No unrelated changes staged.
+- Ponytail: installed instructions discovered and applied at full level.
 
 ## Task ledger
 
@@ -26,19 +27,20 @@ Last updated: 2026-10-15, Asia/Kolkata
 | T07 Backup export | done | 23 unit/four export/one navigation tests, build/lint, actual picker cancel/export/file inspection, restart metadata and scoped visual/security review passed. See docs/verification/t07.md. |
 | T08 Safe backup restore | done | Full 23 unit/49 Android suite, eight strengthened restore tests, native picker/cancel/replace/restart/permission and visual/security review passed. See docs/verification/t08.md. |
 | T09 Design and accessibility review | done | 360 dp/both themes/200%, keyboard/rotation/long-name/contrast, live TalkBack keyboard save, 50 regression passes plus corrected normal/large layout checks; build/lint/security review. See docs/verification/t09.md. |
-| T10 Device validation and delivery | in_progress | Final checks, debug APK/guide and mandatory real-phone reminder/offline validation. |
+| T10 Device validation and delivery | done | 23 unit/51 emulator Android tests, build/lint; real-phone two 10-minute alarms/quiet cutoff, offline round trip, recovery, human snooze/TalkBack and isolated performance passed. Original data/settings/APK restored; limits documented in docs/verification/t10.md. |
 
 Allowed statuses: `not_started`, `in_progress`, `blocked`, `done`. At most one task may be `in_progress` or `blocked`.
 
-## Active task details
+## Completion evidence
 
-- Objective: deliver the debug test build and guide after honest final automated and physical-phone validation.
-- Initial files: README, verification reports and debug APK output.
-- Checks performed: T09 commit verified. Final 51-case emulator run had 50 passes and one timing-test selector ambiguity; repaired by a category-ID tag with an explicit matching history fixture. Focused rerun passed (one test, zero failures/errors), .toolchain/t09-selector-fixed.log. Diff/security review: test-only synthetic change; no app behavior/permission/dependency change. Fix commit pending verification. Phone now connected; delivery guide prepared. Final build/unit/lint checks still require final report reconciliation.
-- Required checks: full unit/build/lint, relevant Android tests, actual phone two consecutive scheduled reminders, quiet boundary, screen off/closed app/restart/snooze/battery saving, offline entry/export/restore, force-stop/reopen, phone performance and delivery guide.
-- Policy confirmed by user: keep the strict instant cutoff, even if it discards a final alarm delivered milliseconds late. SPEC updated; engine policy unchanged.
-- Blockers: phone disconnected again; current build was installed and its entry sheet shown previously. All instrumentation used only the emulator.
-- Next action: complete independent final checks and guide while awaiting the physical phone. Do not mark T10 done or commit it as complete without required phone evidence.
+- Automated checks: full final baseline passed 23 unit/51 API 37 Android tests, build and lint. Later temporary test APK passed 24 unit cases; restored normal source passed build, Android test APK compilation, 23 unit tests and lint again. Zero lint errors/five existing warnings. Full 51-case suite was not repeated after reverting identical source. Logs: .toolchain/t10-final-fixed.log and .toolchain/t10-restored-final-build.log.
+- Physical phone: Samsung SM-A042F, Android 14 / API 34. Real alarms intended 11:47/11:57 arrived at 11:47:00.217 and 11:57:00.159, same generation/correct blocks/single notification. Screen Dozing at both; actual full Battery Saver ON at second under simulated unplug. Strict 11:59 cutoff cleared the alert; no new notification through 12:01:03. User confirmed snooze unavailable with the next alarm ten minutes away and clear TalkBack speech/gesture access to Save. Actual reboot, data persistence, offline entry/edit/delete/Insights/export/confirmed restore and force-stop/reopen checks recorded in docs/verification/t10.md.
+- Performance: isolated physical 10,000-record fixture passed one corrected test: query 600.672923 ms, aggregation 453.858692 ms, save 37.273462 ms. Combined report ~1.055 seconds, slightly above the sub-second aim. Measurement was on USB power; full battery-saving state was not verified then. Only the separate validation package was instrumented; both temporary packages removed.
+- Restoration: normal version 0.1.0 installed; only 60/120-minute choices remain. Original 09:00-22:00/60 minutes/reminders ON restored. Exact access OFF/default, Battery Saver OFF, simulated battery input reset to real USB power, accessibility enabled=0/services=null, airplane mode OFF. Final 12:08 export equals the pre-test snapshot for every category, entry and portable setting. No test entry remains; personal exports stay private/ignored.
+- Artifact: app/build/outputs/apk/debug/app-debug.apk; SHA256 03CBB68FDB6F60CD0FBB4883E38F64EDA7D8BDAE1A4B349EB6619850E6958E46. Normal future alarm verified at 15 October 13:00 using the expected inexact fallback.
+- Review: scoped documentation/data/security review and git diff --check passed. No remaining app source, dependency, manifest permission, signing or global host configuration changes. Private backups, phone screenshots, observer scripts and temporary APKs are ignored. Only six T10 documents are being committed; nothing pushed/published.
+- Limits: the user requested 10-minute testing instead of the long run. Normal hourly/overnight reliability, accepted 15-minute snooze delivery and automatic post-reboot delivery after timely unlock without opening the app were not observed on this phone. Related paths have automated/emulator evidence. See the guide for strict cutoff, force-stop, first unlock, inexact timing and OEM restrictions. Production signing/store publication remain outside scope.
+
 ## Decisions and environment
 
 - Product name: Time Log, a working name.
@@ -47,7 +49,7 @@ Allowed statuses: `not_started`, `in_progress`, `blocked`, `done`. At most one t
 - Package ID and name: `com.timelog.app`, Time Log.
 - Project root and branch: `E:\Time Log`, `codex/t01-foundation`.
 - Git identity: supplied by user and configured locally; global configuration unchanged.
-- Phone: Samsung SM-A042F, Android 14 / API 34; T01 launch verified previously, currently absent from USB/ADB. Local emulator: API 37.0 Google APIs x86_64 16-KB image; latest 33 Android tests passed.
+- Phone: Samsung SM-A042F, Android 14 / API 34; normal APK installed; physical checks and data/settings restoration completed on 15 October. Final Android tests ran on the API 37.0 Google APIs x86_64 16-KB emulator.
 - Instruction updates: latest Android support added to SPEC platform row/T01 scope; user reiterated prompt task commits after tests and security audit, now explicit in AGENTS.md and the task cycle.
 
 ## Checkpoint history
@@ -66,3 +68,4 @@ Keep the active checkpoint concise. Add one short history line per completed tas
 - 2026-10-14: T07 committed as faf3042, feat(T07): export versioned local backups. Build/lint, 23 unit/four export/one navigation tests, native picker cancel/export, file inspection, restart metadata and visual/security audit passed.
 - 2026-10-14: T08 committed as 40ba8ed, feat(T08): restore backups with validation and rollback. 23 unit/49 Android suite and eight strengthened restore tests, build/lint, native restore/cancel/restart/permission and visual/security audit passed.
 - 2026-10-15: T09 committed as 92ff9fb, refactor(T09): refine minimal UI and accessibility. 50 regression passes plus corrected normal/200% layout tests, build/lint, 360 dp/both themes/keyboard/rotation/long-name/contrast and actual TalkBack save/security review passed.
+- 2026-10-15: T10 complete; chore(T10): validate Android build and document delivery, commit pending verification. Build/unit/lint/51-case baseline and accelerated physical reminders/quiet/offline/restore/recovery/snooze/accessibility/performance evidence passed; original phone data/settings and normal APK restored. Extended reliability limits documented.

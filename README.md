@@ -1,6 +1,37 @@
 # Time Log Android app
 
-Prepared on 13 October 2026. This dedicated project contains the requirements, implementation instructions and Android app with local entry, editable history, categories, elapsed Today gaps and reminder schedule settings. See `PROGRESS.md` for verified status and `BUILDING.md` for build commands.
+Time Log is an offline Android app for recording time quickly and remembering to check in. It includes editable time history, custom categories, daily/weekly charts, local reminders and versioned JSON backup/restore. Android 8.0 / API 26 or newer; compile/target API 37. No account, analytics or app network permission.
+
+T01-T10 are complete with the documented physical-device checks, including the user-approved temporary 10-minute reminder test. This is a debug test build. See [progress](PROGRESS.md), [build/install instructions](BUILDING.md) and [verification evidence](docs/verification/).
+
+## Install and use
+
+Build using `gradlew.bat assembleDebug`. The test APK is `app/build/outputs/apk/debug/app-debug.apk`. Connect an authorized USB-debugging phone and install without clearing its existing app data:
+
+```powershell
+adb -d install -r app/build/outputs/apk/debug/app-debug.apk
+adb -d shell am start -n com.timelog.app/.MainActivity
+```
+
+Choose tracking hours and a 60/120-minute interval, or select Set up later. Today > Log time opens the recent unlogged interval: check its range, select a category, then Save. Add a note or split only when needed. Tap a saved entry to edit, split or delete with confirmation. Use the date arrows/picker for earlier days. Insights shows daily/weekly durations and category shares. Settings contains reminders, categories and backups.
+
+## Backup and restore
+
+Settings > Export backup uses the system file picker. Backups are unencrypted JSON containing all categories, entries and notes; choose a private location. A document provider can be cloud-backed even though Time Log itself performs no sync. Keep a copy outside app-private storage; uninstalling the app removes its local history.
+
+Settings > Restore backup validates a selected file before changing data. Inspect the backup date and counts. Export current data first if needed, or Cancel. Restore and replace replaces all local history and categories; it does not merge. Restored reminders remain off until you explicitly enable them. Invalid or incomplete files and failed database replacements preserve existing data and reminders. Supported input: version 1, up to 20 MiB and 100,000 entries. See the [backup contract](docs/BACKUP_FORMAT.md).
+
+## Reminder troubleshooting and limits
+
+- Enable reminders in Settings and allow notifications. If the status says blocked, check the app's notification/channel settings. Send test reminder checks notification delivery without waiting for a scheduled hour.
+- Allow precise reminders is optional. Without that access, Android may deliver alarms late; the app shows that timing may vary. Battery saving and manufacturer restrictions can also delay or prevent delivery.
+- A reminder opens its remaining unlogged block. Fully logged blocks need no reminder. Snooze is 15 minutes and is unavailable when it would reach the next regular reminder or exceed the selected window.
+- Delivery after the window-end instant is discarded. The user selected this strict cutoff, so an end-of-window alarm arriving even milliseconds late can be suppressed. No overdue burst is posted on reopening.
+- Force-stop prevents Android from delivering reminders until you reopen Time Log. After reopening, future scheduling resumes. A normal app close is different from force-stop; Android/OEM restrictions still apply.
+- Unlock the phone once after a reboot so its encrypted local data becomes available. Reopen Time Log if reminders do not resume.
+- Timezone changes can move historical intervals between report dates. Records retain their actual UTC instants. Reminder windows must start and end on the same day.
+
+Physical-phone offline entry/edit/delete, backup round trip, notification tap, force-stop/reopen recovery, two consecutive 10-minute reminders, quiet cutoff, snooze rejection and user-confirmed TalkBack speech/gestures passed. The normal APK and original settings were restored and all portable data compared equal afterward. With 10,000 isolated synthetic records, save took 37 ms and query/report calculation about 1.05 seconds. See [T10 evidence and limits](docs/verification/t10.md). Normal hourly/overnight reliability and accepted 15-minute snooze delivery were not observed on this phone. Release signing and store publishing are outside scope.
 
 ## Use these files in VS Code
 
@@ -49,4 +80,4 @@ Codex discovers project `AGENTS.md` instructions at session startup. Local plugi
 
 ## Scope of this delivery
 
-The initial handoff contained documentation only. T01-T04 add the single-module Android project, tested persistence, entry/history UI and reminder schedule rules/settings; checks are tracked in `PROGRESS.md`. Notification delivery, charts and backup follow in the ordered tasks. The old Google Form and Google Sheet are outside this app project; do not change or import them automatically.
+The initial handoff contained documentation only. T01-T10 now provide the single-module Android app, tested local persistence, reminder delivery, charts, backup/restore, accessibility refinements and debug-build handoff. The old Google Form and Google Sheet are outside this app project; do not change or import them automatically.

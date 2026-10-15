@@ -230,6 +230,8 @@ Round-trip acceptance: export, restore into a fresh test database, and compare e
 
 ## 10. Acceptance and delivery
 
+Test exception authorized on 15 October 2026: T10 may use a temporary accelerated debug build for the user's requested 10-minute reminder test. Record its actual interval and distinguish its evidence from the normal 60/120-minute schedule. Restore normal source, APK and original phone settings afterward. Keep the strict window-end cutoff and 15-minute snooze rules unchanged.
+
 Version 1 is ready only when:
 
 1. First-use setup, category selection, inline category creation, save/edit/split/delete, and history work offline.
