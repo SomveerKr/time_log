@@ -101,7 +101,10 @@ class TimeLogViewModel(
     val ready get() = !loading && settings != null && dataError == null
     val day get() = dayRange(date, zone)
     val today get() = date == localDate(now, zone)
-    val visibleEntries get() = entries.filter { it.endMillis > day.start && it.startMillis < day.end }
+    val visibleEntries get(): List<TimeEntry> {
+        val range = day
+        return entries.filter { it.endMillis > range.start && it.startMillis < range.end }
+    }
     val gaps get() = settings?.let { unloggedRanges(elapsedWindow(date, zone,
         it.trackingStartMinute, it.trackingEndMinute, now), entries) }.orEmpty()
 

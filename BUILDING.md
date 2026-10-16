@@ -1,6 +1,6 @@
 # Building Time Log
 
-This debug test build includes local entry/history/categories, Today gaps,
+Time Log includes local entry/history/categories, Today gaps,
 reminders, daily/weekly charts and JSON export/restore. T01-T10 are complete;
 `docs/verification/t10.md` records the physical checks and their limits.
 
@@ -72,7 +72,7 @@ Reinstall the debug APK before manual visual checks.
 
 The debug app APK is `app/build/outputs/apk/debug/app-debug.apk`. Build outputs,
 local tools, device credentials, signing files, and personal backups must stay
-outside commits. There is no production signing or publishing setup.
+outside commits. Release signing is configured below; publishing remains outside scope.
 
 Do not uninstall or clear storage on a phone containing real history. If an
 update fails because a different signing certificate was used, export a backup
@@ -80,3 +80,31 @@ before considering removal; replacing the existing installation can erase data.
 Internet is needed to download the toolchain/dependencies on a fresh computer;
 the built app itself works offline. On macOS/Linux use `./gradlew` with the same
 tasks. See README for normal use, backup/restore and reminder limitations.
+
+
+## Signed release
+
+The final shareable APK is `app/build/outputs/apk/release/app-release.apk`, version 1.0.0 (code 2). R8 code optimization/obfuscation and resource shrinking are enabled, with debugging disabled. No extra runtime dependency or debug screen was added. The app's Send test reminder action is a normal troubleshooting feature.
+
+This workspace has a dedicated release key at `.signing/time-log-release.jks` and its credentials in root `signing.properties`. Both are ignored by Git and restricted to the current Windows account and SYSTEM. Securely back up BOTH outside this workspace before relying on future updates. Keep them private; only share the APK. Losing the key prevents updates of this installed release using the same signing identity. Keep `app/build/outputs/mapping/release/` with each privately archived build for crash deobfuscation.
+
+On another authorized build machine, restore those files securely and preserve these property names (values below are placeholders, not real credentials):
+
+```properties
+storeFile=.signing/time-log-release.jks
+storePassword=<private password>
+keyAlias=timelog
+keyPassword=<private password>
+```
+
+```powershell
+.\gradlew.bat :app:assembleRelease :app:testDebugUnitTest :app:lintRelease
+apksigner verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
+zipalign -c -P 16 -v 4 app/build/outputs/apk/release/app-release.apk
+```
+
+AGP generates the shared-source unit-test task for debug only in this project; actual optimized release behavior is checked separately. Without signing.properties, Gradle can produce only an unsigned release APK; never distribute it as the verified signed artifact. For future releases, increment versionCode and use the SAME key. Do not regenerate or silently replace it.
+
+Certificate SHA-256: `5cbfbb16b3065bcb8ee4249eb873c6aa3244976f3883ed3ad49bb3703718560b`.
+
+The debug signer differs. A release install over the old debug app is rejected by Android. Export and verify a backup before a deliberate uninstall/reinstall/restore migration; uninstall deletes local history. This task did not migrate or uninstall the phone app. New phones need only the APK. No Play Store upload, signing-service transfer or publication was performed.

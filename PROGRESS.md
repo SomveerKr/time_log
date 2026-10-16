@@ -1,17 +1,17 @@
 # Saved implementation progress
 
-Last updated: 2026-10-15, Asia/Kolkata
+Last updated: 2026-10-16, Asia/Kolkata
 
 ## Current checkpoint
 
-- Project state: T01-T10 complete for the requested debug-build handoff, including the user-approved accelerated device test.
-- Current task: none; T10 complete.
-- Next task: none in IMPLEMENTATION.md.
-- Exact next action: use the installed normal Time Log build or the APK at app/build/outputs/apk/debug/app-debug.apk. For future changes, inspect Git and this checkpoint first. Extended hourly/overnight and accepted snooze observations are optional follow-up checks with the documented limits.
+- Project state: T01-T11 complete. Signed optimized release APK and security/resource audit delivered locally.
+- Current task: none; T11 complete.
+- Next task: none.
+- Exact next action: use/share app/build/outputs/apk/release/app-release.apk. Securely back up .signing/time-log-release.jks and signing.properties. Export user history before any manual debug-to-release migration; phone installation/data were not changed.
 - Current blocker: none.
-- Last verified predecessor: `72d749870df2ab79c78424916e99875117b75fdd`, `test(T09): disambiguate reminder entry category selection`.
-- Completion commit: `chore(T10): validate Android build and document delivery`, commit pending verification; resolve its SHA from Git after committing.
-- Task files: README.md, BUILDING.md, PROGRESS.md, SPEC.md, IMPLEMENTATION.md and docs/verification/t10.md. Documentation only; all temporary app/test source changes reverted. No unrelated changes staged.
+- Last verified predecessor: `bccad51e37ac9083403ac0e4ec14159d06ef0152`, `chore(T10): validate Android build and document delivery`.
+- Completion commit: `chore(T11): audit and deliver optimized signed release`, commit pending verification; resolve SHA from Git.
+- Task files: .gitignore, app/build.gradle.kts, app/src/main/java/com/timelog/app/ui/TimeLogViewModel.kt, README.md, BUILDING.md, PROGRESS.md, SPEC.md, IMPLEMENTATION.md and docs/verification/t11.md. Signing files and test artifacts remain ignored.
 - Ponytail: installed instructions discovered and applied at full level.
 
 ## Task ledger
@@ -28,10 +28,11 @@ Last updated: 2026-10-15, Asia/Kolkata
 | T08 Safe backup restore | done | Full 23 unit/49 Android suite, eight strengthened restore tests, native picker/cancel/replace/restart/permission and visual/security review passed. See docs/verification/t08.md. |
 | T09 Design and accessibility review | done | 360 dp/both themes/200%, keyboard/rotation/long-name/contrast, live TalkBack keyboard save, 50 regression passes plus corrected normal/large layout checks; build/lint/security review. See docs/verification/t09.md. |
 | T10 Device validation and delivery | done | 23 unit/51 emulator Android tests, build/lint; real-phone two 10-minute alarms/quiet cutoff, offline round trip, recovery, human snooze/TalkBack and isolated performance passed. Original data/settings/APK restored; limits documented in docs/verification/t10.md. |
+| T11 Security/resource audit and signed release | done | Signed 1.0.0 optimized APK; security/OSV/manifest/signature review, 23 unit/51 Android tests, release lint and actual release offline/10k-backup/lifecycle-resource checks passed. See docs/verification/t11.md. |
 
 Allowed statuses: `not_started`, `in_progress`, `blocked`, `done`. At most one task may be `in_progress` or `blocked`.
 
-## Completion evidence
+## T10 completion evidence
 
 - Automated checks: full final baseline passed 23 unit/51 API 37 Android tests, build and lint. Later temporary test APK passed 24 unit cases; restored normal source passed build, Android test APK compilation, 23 unit tests and lint again. Zero lint errors/five existing warnings. Full 51-case suite was not repeated after reverting identical source. Logs: .toolchain/t10-final-fixed.log and .toolchain/t10-restored-final-build.log.
 - Physical phone: Samsung SM-A042F, Android 14 / API 34. Real alarms intended 11:47/11:57 arrived at 11:47:00.217 and 11:57:00.159, same generation/correct blocks/single notification. Screen Dozing at both; actual full Battery Saver ON at second under simulated unplug. Strict 11:59 cutoff cleared the alert; no new notification through 12:01:03. User confirmed snooze unavailable with the next alarm ten minutes away and clear TalkBack speech/gesture access to Save. Actual reboot, data persistence, offline entry/edit/delete/Insights/export/confirmed restore and force-stop/reopen checks recorded in docs/verification/t10.md.
@@ -69,3 +70,17 @@ Keep the active checkpoint concise. Add one short history line per completed tas
 - 2026-10-14: T08 committed as 40ba8ed, feat(T08): restore backups with validation and rollback. 23 unit/49 Android suite and eight strengthened restore tests, build/lint, native restore/cancel/restart/permission and visual/security audit passed.
 - 2026-10-15: T09 committed as 92ff9fb, refactor(T09): refine minimal UI and accessibility. 50 regression passes plus corrected normal/200% layout tests, build/lint, 360 dp/both themes/keyboard/rotation/long-name/contrast and actual TalkBack save/security review passed.
 - 2026-10-15: T10 complete; chore(T10): validate Android build and document delivery, commit pending verification. Build/unit/lint/51-case baseline and accelerated physical reminders/quiet/offline/restore/recovery/snooze/accessibility/performance evidence passed; original phone data/settings and normal APK restored. Extended reliability limits documented.
+
+
+## T11 completion checkpoint
+
+- Release: version 1.0.0/code 2; app/build/outputs/apk/release/app-release.apk, 1,529,279 bytes (1.46 MiB), SHA256 4964E16F003031E7A11A15325712284B0F2E5AACF4279CB62E7168EFE2BF708C. R8 code/resource shrinking, non-debuggable, v2 signature/16-KiB alignment verified. APK contains no signing/database/test artifacts.
+- Changes: release signing/optimization/version configuration, ignored private signing directory, one history-filter allocation optimization, release/security/resource/install/key-custody documentation. No dependency or permission added. Scoped diff/security review complete; no unrelated changes.
+- Checks: assembleRelease/testDebugUnitTest/lintRelease/assembleDebugAndroidTest passed; 23 unit tests, 51 connected API 37 Android tests, zero failures/skips. Release lint zero errors/two UseKtx suggestions. OSV queried all 106 resolved release modules: zero known-advisory matches. No security guarantee inferred from that lookup.
+- Exact APK runtime: setup/save/Insights, native export, validated 10,000-entry restore, restart persistence, offline weekly report/test reminder/tap/normal alarm registration passed. Re-export comparison matched every entry/category field and settings except the intentionally enabled reminder switch. Actual release light/dark screenshots reviewed.
+- Resource evidence: same-process 30 Activity recreations/navigation cycles; PSS 30,522 KiB large-history baseline, 42,779/49,178/39,797 KiB after 10/20/30, 32,414 KiB background. Activity count returned from 2 to 1, no accumulating count, crash-buffer records or running service. Private data 3,352 KiB with 10,000 records, unchanged after cycles. Backup operations temporarily allocate snapshots; history/exports grow with usage. No universal zero-leak or constant-memory claim.
+- Internet: verified source and final APK have no INTERNET permission, network client, analytics or sync. Core features are offline. A separate cloud document provider can use the Internet if selected; use local Downloads/Documents for fully local backups.
+- Signing: dedicated RSA-3072 key and passwords are private, ignored and ACL-restricted. Keep BOTH .signing/time-log-release.jks and signing.properties securely backed up for updates; do not share them. Debug certificate differs, so existing phone data must be exported before any manual uninstall/migration. Phone untouched. Emulator temporary root/connectivity/theme changes restored.
+- Recovery notes: usage-limit approval failures interrupted tools but did not erase work. Corrected initial Gradle import and unavailable release-unit task; shared-source unit task used. Initial unsupported lifecycle helper and interrupted restore are excluded; corrected/completed runs passed. Earlier failed restore left the prior synthetic record intact.
+- Limits: physical-phone release RAM profiling, minimum-API release runtime, heap-dominator analysis, exhaustive penetration and long-term/overnight runs not performed. T10 reminder/snooze/post-reboot limits remain. No publication. Evidence and methods: docs/verification/t11.md; raw synthetic logs/screenshots remain ignored in .toolchain.
+- 2026-10-16: T11 completed; chore(T11): audit and deliver optimized signed release, commit pending verification. Required checks passed; no further implementation task.

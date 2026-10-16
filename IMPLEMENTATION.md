@@ -136,3 +136,13 @@ Use normal Gradle wrapper tasks after the project is created, typically `./gradl
 At a stopping point, state the task completed or blocked, the tests actually run, its verified commit hash if committed, and the exact next task/action. End with untested behavior and relevant risk. Keep the response short; the detailed state belongs in `PROGRESS.md`.
 
 Reading `AGENTS.md` can restore project instructions in a new Codex session. It does not wake an idle extension or grant perpetual execution. The user starts or resumes a chat; the agent should then use the saved checkpoint without asking the user to reconstruct the project history.
+
+### T11 Security/resource audit and signed release
+
+Authorized by the user on 16 October 2026; supersedes T10's release-signing exclusion.
+
+**Scope:** Audit security, memory/lifecycle, database and backup allocation, background work and storage. Fix concrete issues with the smallest complete change. Enable release code/resource shrinking, create a private local release signing key and build a signed APK. Keep secrets and artifacts out of Git. Do not publish or replace the user's debug installation with a different certificate.
+
+**Required checks:** Review all production source and merged release manifest; targeted regressions for fixes; shared-source unit tests (AGP generates testDebugUnitTest only), release lint, optimized signed build, signature/certificate/debuggable checks. Exercise the actual optimized APK on a dedicated emulator with synthetic data (entry, insights, backup round trip, restart and reminder). Measure APK/storage and process memory through repeated screen/lifecycle exercise; report limits rather than promise zero leaks. Document signing-key custody, install/update compatibility and observed resource use.
+
+**Commit:** `chore(T11): audit and deliver optimized signed release`

@@ -245,3 +245,7 @@ Version 1 is ready only when:
 Aim for immediate feedback on taps and sub-second ordinary record saves and weekly report updates on the test phone with 10,000 synthetic entries. Record actual device and results; do not invent measurements. No polling loop or continuously running service is needed.
 
 Platform references were checked on 13 October 2026. Recheck affected official documentation during implementation when the SDK/API behavior or selected versions differ.
+
+### Signed release follow-up (16 October 2026)
+
+The user authorized a locally signed release APK after a security and memory/storage review. Optimize release code/resources, verify the actual release artifact and document measurements and limits. Retain normal 60/120-minute reminders. Keep signing material private and reusable for updates. This does not authorize publishing or deleting the existing debug installation/data.

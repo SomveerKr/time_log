@@ -13,6 +13,7 @@ local.properties
 *.key
 keystore.properties
 signing.properties
+.signing/
 .env
 .env.*
 *.db

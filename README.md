@@ -2,14 +2,18 @@
 
 Time Log is an offline Android app for recording time quickly and remembering to check in. It includes editable time history, custom categories, daily/weekly charts, local reminders and versioned JSON backup/restore. Android 8.0 / API 26 or newer; compile/target API 37. No account, analytics or app network permission.
 
-T01-T10 are complete with the documented physical-device checks, including the user-approved temporary 10-minute reminder test. This is a debug test build. See [progress](PROGRESS.md), [build/install instructions](BUILDING.md) and [verification evidence](docs/verification/).
+T01-T10 are complete with the documented physical-device checks, including the user-approved temporary 10-minute reminder test. T11 adds a signed, optimized release APK; see the [release audit](docs/verification/t11.md) for measurements and limits. See [progress](PROGRESS.md), [build/install instructions](BUILDING.md) and [verification evidence](docs/verification/).
 
 ## Install and use
 
-Build using `gradlew.bat assembleDebug`. The test APK is `app/build/outputs/apk/debug/app-debug.apk`. Connect an authorized USB-debugging phone and install without clearing its existing app data:
+Share `app/build/outputs/apk/release/app-release.apk` (version 1.0.0) as a document or by USB. On an Android 8.0+ phone, open the file, allow installation from that source if prompted, and install. The release is signed with a private release key, optimized and not debuggable.
+
+If the old debug app is installed, this release cannot update it because the signatures differ. Export a backup from the old app, verify the file is readable and keep it safely outside app storage before any manual uninstall. Then install the release, restore the backup and re-enable reminders. Uninstalling without a backup loses local data. Future releases signed with this same release key can update in place.
+
+For a new installation or an update of the same release-signed app using ADB:
 
 ```powershell
-adb -d install -r app/build/outputs/apk/debug/app-debug.apk
+adb -d install -r app/build/outputs/apk/release/app-release.apk
 adb -d shell am start -n com.timelog.app/.MainActivity
 ```
 
@@ -31,7 +35,7 @@ Settings > Restore backup validates a selected file before changing data. Inspec
 - Unlock the phone once after a reboot so its encrypted local data becomes available. Reopen Time Log if reminders do not resume.
 - Timezone changes can move historical intervals between report dates. Records retain their actual UTC instants. Reminder windows must start and end on the same day.
 
-Physical-phone offline entry/edit/delete, backup round trip, notification tap, force-stop/reopen recovery, two consecutive 10-minute reminders, quiet cutoff, snooze rejection and user-confirmed TalkBack speech/gestures passed. The normal APK and original settings were restored and all portable data compared equal afterward. With 10,000 isolated synthetic records, save took 37 ms and query/report calculation about 1.05 seconds. See [T10 evidence and limits](docs/verification/t10.md). Normal hourly/overnight reliability and accepted 15-minute snooze delivery were not observed on this phone. Release signing and store publishing are outside scope.
+Physical-phone offline entry/edit/delete, backup round trip, notification tap, force-stop/reopen recovery, two consecutive 10-minute reminders, quiet cutoff, snooze rejection and user-confirmed TalkBack speech/gestures passed. The normal APK and original settings were restored and all portable data compared equal afterward. With 10,000 isolated synthetic records, save took 37 ms and query/report calculation about 1.05 seconds. See [T10 evidence and limits](docs/verification/t10.md). Normal hourly/overnight reliability and accepted 15-minute snooze delivery were not observed on this phone. The signed release follows in T11; store publishing remains outside scope.
 
 ## Use these files in VS Code
 
