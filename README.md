@@ -4,6 +4,24 @@ Time Log is an offline Android app for recording time quickly and remembering to
 
 T01-T10 are complete with the documented physical-device checks, including the user-approved temporary 10-minute reminder test. T11 adds a signed, optimized release APK; see the [release audit](docs/verification/t11.md) for measurements and limits. See [progress](PROGRESS.md), [build/install instructions](BUILDING.md) and [verification evidence](docs/verification/).
 
+## Download
+
+Download the latest APK directly from GitHub:
+
+**[Download Time Log APK](https://github.com/SomveerKr/time_log/raw/main/release/time%20log.apk)**
+
+Or copy this URL into your browser:
+```
+https://github.com/SomveerKr/time_log/raw/main/release/time%20log.apk
+```
+
+1. Tap the link above on your Android phone (or transfer the downloaded file to your phone).
+2. Open the downloaded `time log.apk` file.
+3. If prompted, allow installation from unknown sources for your browser or file manager.
+4. Tap **Install** and then **Open**.
+
+> Requires Android 8.0 (API 26) or newer. No account, network or special permissions needed.
+
 ## Install and use
 
 Share `app/build/outputs/apk/release/app-release.apk` (version 1.0.0) as a document or by USB. On an Android 8.0+ phone, open the file, allow installation from that source if prompted, and install. The release is signed with a private release key, optimized and not debuggable.
